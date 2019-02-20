@@ -61,4 +61,12 @@ public class Gac14Core
         	modules.getRegistry().register(new CoreModule());
         }
     }
+    
+    private static Gac14Core instance;
+
+    @Nonnull
+	public static Gac14Core getInstance() {
+		assert instance!=null:"Mod Construction Has not occured yet, Construction Must Complete";
+		return instance;
+	}
 }
