@@ -7,7 +7,7 @@ final class PlayerInfoTransientTag<Module extends Gac14Module<Module>, Type, NBT
 		extends PlayerInfoTag<Module, Type, NBTTag, PlayerInfoTransientTag<Module,Type,NBTTag,InfoT>> {
 
 	protected PlayerInfoTransientTag(InfoT tag) {
-		super(tag.getModule(), tag.getName(), tag.get());
+		super(tag.getModule(), tag.getName(), tag.get(),tag.cl);
 		// TODO Auto-generated constructor stub
 	}
 

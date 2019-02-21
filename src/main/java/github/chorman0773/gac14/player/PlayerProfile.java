@@ -40,6 +40,16 @@ public class PlayerProfile {
 			throw new IllegalArgumentException("Tag with key "+tag.key+" already exists");
 	}
 	
+	@SuppressWarnings("unchecked")
+	public <Type> Type getTag(ResourceLocation key) {
+		return (Type)tags.get(key).get();
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public <Type> void setTag(ResourceLocation key,Type t) {
+		((PlayerInfoTag)tags.get(key)).set((Object)t);
+	}
+	
 	
 	public static PlayerProfile get(GameProfile profile) {
 		final UUID id = profile.getId();

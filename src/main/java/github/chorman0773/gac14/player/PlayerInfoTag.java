@@ -9,11 +9,13 @@ public abstract class PlayerInfoTag<Module extends Gac14Module<Module>, Type, NB
 	protected final Module mod;
 	protected final String name;
 	protected final ResourceLocation key;
-	protected PlayerInfoTag(Module mod,String name,Type initial) {
+	protected final Class<Type> cl;
+	protected PlayerInfoTag(Module mod,String name,Type initial,Class<Type> cl) {
 		this.value = initial;
 		this.mod = mod;
 		this.name = name;
 		this.key = new ResourceLocation(mod.getModuleName().toString()+"/"+name);
+		this.cl = cl;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -29,10 +31,10 @@ public abstract class PlayerInfoTag<Module extends Gac14Module<Module>, Type, NB
 	public abstract NBTTag writeToNbt();
 	public abstract void readFromNbt(NBTTag tag);
 	public final Type get() {
-		return value;
+		return cl.cast(value);
 	}
 	public final void set(Type value) {
-		this.value = value;
+		this.value = cl.cast(value);
 	}
 	
 	public final String getName() {

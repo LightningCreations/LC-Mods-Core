@@ -6,8 +6,8 @@ import net.minecraft.nbt.NBTTagString;
 public final class PlayerInfoStringTag<Module extends Gac14Module<Module>>
 		extends PlayerInfoTag<Module, String, NBTTagString, PlayerInfoStringTag<Module>> {
 
-	protected PlayerInfoStringTag(Module mod,String name) {
-		super(mod, name, "");
+	public PlayerInfoStringTag(Module mod,String name) {
+		super(mod, name, "",String.class);
 		// TODO Auto-generated constructor stub
 	}
 
