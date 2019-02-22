@@ -1,16 +1,22 @@
 package github.chorman0773.gac14.player;
 
+import javax.annotation.Nonnull;
+
 import github.chorman0773.gac14.Gac14Module;
 import net.minecraft.nbt.INBTBase;
 import net.minecraft.util.ResourceLocation;
 
 public abstract class PlayerInfoTag<Module extends Gac14Module<Module>, Type, NBTTag extends INBTBase,PlayerInfoT extends PlayerInfoTag<Module,Type,NBTTag,PlayerInfoT>> implements Cloneable {
 	private Type value;
-	protected final Module mod;
-	protected final String name;
-	protected final ResourceLocation key;
-	protected final Class<Type> cl;
-	protected PlayerInfoTag(Module mod,String name,Type initial,Class<Type> cl) {
+	@Nonnull protected final Module mod;
+	@Nonnull protected final String name;
+	@Nonnull protected final ResourceLocation key;
+	@Nonnull protected final Class<Type> cl;
+	
+	protected PlayerInfoTag(@Nonnull Module mod,@Nonnull String name,Type initial,@Nonnull Class<Type> cl) {
+		assert mod!=null;
+		assert name!=null;
+		assert cl!=null;
 		this.value = initial;
 		this.mod = mod;
 		this.name = name;
@@ -37,10 +43,12 @@ public abstract class PlayerInfoTag<Module extends Gac14Module<Module>, Type, NB
 		this.value = cl.cast(value);
 	}
 	
+	@Nonnull
 	public final String getName() {
 		return name;
 	}
 	
+	@Nonnull
 	public final ResourceLocation getKey() {
 		return key;
 	}
