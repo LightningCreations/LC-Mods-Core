@@ -19,4 +19,9 @@ public abstract class Gac14Module<M extends Gac14Module<M>> extends ForgeRegistr
 	public final TypeToken<M> getType(){
 		return new TypeToken<M>((Class<M>)getClass()) {private static final long serialVersionUID = -3256234182776274453L;};
 	}
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return getModuleName().toString();
+	}
 }

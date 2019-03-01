@@ -2,7 +2,7 @@ package github.chorman0773.gac14;
 
 import net.minecraft.util.ResourceLocation;
 
-public class CoreModule extends Gac14Module<CoreModule> {
+public final class CoreModule extends Gac14Module<CoreModule> {
 
 	public CoreModule() {
 		// TODO Auto-generated constructor stub
