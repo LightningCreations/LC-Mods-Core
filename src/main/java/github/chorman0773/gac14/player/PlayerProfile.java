@@ -18,15 +18,15 @@ import net.minecraft.util.ResourceLocation;
 
 public class PlayerProfile {
 	@Nullable private EntityPlayerMP player;
-	@Nonnull private GameProfile profile;
-	@Nonnull private UUID id;
+	@Nonnull private final GameProfile profile;
+	@Nonnull private final UUID id;
 	
 	
 	@Nonnull private static final Gac14Core core = Gac14Core.getInstance(); 
 	@Nonnull private static final MinecraftServer server = core.getServer();
 	private static final Map<UUID,PlayerProfile> profiles = new TreeMap<>();
 	
-	private Map<ResourceLocation,PlayerInfoTag<?,?,?,?>> tags = new TreeMap<>((a,b)->a.toString().compareToIgnoreCase(b.toString()));
+	@Nonnull private Map<ResourceLocation,PlayerInfoTag<?,?,?,?>> tags = new TreeMap<>((a,b)->a.toString().compareToIgnoreCase(b.toString()));
 	
 	private PlayerProfile(EntityPlayerMP player,GameProfile profile,UUID id) {
 		this.player = player;

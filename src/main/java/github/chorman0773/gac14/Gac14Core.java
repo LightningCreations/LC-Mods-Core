@@ -31,9 +31,10 @@ public class Gac14Core
     private static final Logger LOGGER = LogManager.getLogger();
 
     public Gac14Core() {
-
+    	assert instance==null:"Initialization of Gac14Core shall occur exactly once";
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
+        instance = this;
         
     }
     private MinecraftServer server;

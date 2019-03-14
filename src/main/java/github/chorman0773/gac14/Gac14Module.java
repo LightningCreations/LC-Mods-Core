@@ -1,7 +1,5 @@
 package github.chorman0773.gac14;
 
-import java.rmi.server.RemoteObject;
-
 import com.google.common.reflect.TypeToken;
 
 import net.minecraft.util.ResourceLocation;
