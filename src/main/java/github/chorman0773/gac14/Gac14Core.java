@@ -1,25 +1,15 @@
 package github.chorman0773.gac14;
 
-import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.RegistryBuilder;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
@@ -59,8 +49,13 @@ public class Gac14Core
         	new RegistryBuilder<Gac14Module<?>>().setType((Class<Gac14Module<?>>)(Class<?>)Gac14Module.class).allowModification().create();
         }
         public static void registerModule(RegistryEvent.Register<Gac14Module<?>> modules) {
-        	modules.getRegistry().register(new CoreModule());
-        }
+         	modules.getRegistry().register(new CoreModule());
+         }
+    }
+    
+    @Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.FORGE)
+    public static class RegisterStuff{
+    	 
     }
     
     private static Gac14Core instance;

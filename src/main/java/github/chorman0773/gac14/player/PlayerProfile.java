@@ -1,7 +1,11 @@
 package github.chorman0773.gac14.player;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
@@ -11,16 +15,28 @@ import com.mojang.authlib.GameProfile;
 
 import github.chorman0773.gac14.Gac14Core;
 import github.chorman0773.gac14.Gac14Module;
+import github.chorman0773.gac14.permissions.IBasicPermissible;
+import github.chorman0773.gac14.permissions.IGroup;
+import github.chorman0773.gac14.permissions.IPermission;
+import github.chorman0773.gac14.permissions.PermissionManager;
+import github.chorman0773.gac14.util.Comparators;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.INBTBase;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.util.INBTSerializable;
 
-public class PlayerProfile {
+public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<NBTTagCompound> {
 	@Nullable private EntityPlayerMP player;
 	@Nonnull private final GameProfile profile;
 	@Nonnull private final UUID id;
+	private Set<IGroup<ResourceLocation,PermissionManager,?>> groups = new TreeSet<>(Comparators.with(Comparators.with(String.CASE_INSENSITIVE_ORDER, ResourceLocation::toString), IGroup::getName));
+	private Set<IPermission<PermissionManager,String,?>> permissions = new TreeSet<>();
+	private Set<IPermission<PermissionManager,String,?>> revoked = new TreeSet<>();
 	
+	private Set<IPermission<PermissionManager,String,?>> cached;
+	private boolean permissionsDirty = true;
 	
 	@Nonnull private static final Gac14Core core = Gac14Core.getInstance(); 
 	@Nonnull private static final MinecraftServer server = core.getServer();
@@ -84,6 +100,69 @@ public class PlayerProfile {
 		}
 		else 
 			return player = server.getPlayerList().getPlayerByUUID(id);
+	}
+	
+	public void addPermission(IPermission<PermissionManager,String,?> permission) {
+		revoked.remove(permission);
+		permissions.add(permission);
+		permissionsDirty = true;
+	}
+	
+	public void removePermission(IPermission<PermissionManager,String,?> permission) {
+		permissions.remove(permission);
+		permissionsDirty = true;
+	}
+	
+	public void revokePermission(IPermission<PermissionManager,String,?> permission) {
+		permissions.remove(permission);
+		revoked.add(permission);
+		permissionsDirty = true;
+	}
+
+
+	@Override
+	public UUID getName() {
+		// TODO Auto-generated method stub
+		return id;
+	}
+
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Set<? extends IPermission<PermissionManager, String, ?>> getPermissions(PermissionManager manager) {
+		if(permissionsDirty) {
+			Set<IPermission<PermissionManager,String,?>> permissions = new TreeSet<>();
+			for(IPermission<PermissionManager,String,?> p:this.permissions)
+				permissions.addAll(p.implies(manager));
+			for(IGroup<ResourceLocation,PermissionManager,?> g:this.groups)
+				permissions.addAll((Set<? extends IPermission<PermissionManager,String,?>>)g.implied(manager));
+			for(IPermission<PermissionManager,String,?> p:this.revoked)
+				permissions.removeAll(p.implies(manager));
+			cached = permissions;
+			permissionsDirty = false;
+		}
+		return Collections.unmodifiableSet(this.cached);
+	}
+
+
+	@Override
+	public Set<? extends IGroup<ResourceLocation, PermissionManager, ?>> getGroups(PermissionManager manager) {
+		// TODO Auto-generated method stub
+		return Collections.unmodifiableSet(groups);
+	}
+
+
+	@Override
+	public NBTTagCompound serializeNBT() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public void deserializeNBT(NBTTagCompound nbt) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }
