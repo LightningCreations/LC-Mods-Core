@@ -1,6 +1,7 @@
 package github.chorman0773.gac14;
 
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -10,6 +11,11 @@ import net.minecraftforge.registries.RegistryBuilder;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import github.chorman0773.gac14.permissions.PermissionManager;
+
+import java.nio.file.Path;
+import java.util.UUID;
 
 import javax.annotation.Nonnull;
 
@@ -28,6 +34,11 @@ public class Gac14Core
         
     }
     private MinecraftServer server;
+    private PermissionManager manager;
+    private Path root;
+    private Path config;
+    private Path data;
+    private Path players;
     
     @Nonnull
     public MinecraftServer getServer() {
@@ -39,6 +50,11 @@ public class Gac14Core
     @SubscribeEvent
     public void onServerStarting(FMLServerStartingEvent event) {
         server = event.getServer();
+        root = server.getDataDirectory().toPath();
+        manager = new PermissionManager();
+        config = root.resolve("config");
+        data = root.resolve("data");
+        
     }
 
     // You can use EventBusSubscriber to automatically subscribe events on the contained class (this is subscribing to the MOD
@@ -50,7 +66,7 @@ public class Gac14Core
         }
         public static void registerModule(RegistryEvent.Register<Gac14Module<?>> modules) {
          	modules.getRegistry().register(new CoreModule());
-         }
+        }
     }
     
     @Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.FORGE)
@@ -65,4 +81,35 @@ public class Gac14Core
 		assert instance!=null:"Mod Construction Has not occured yet, Construction Must Complete";
 		return instance;
 	}
+    
+    @Nonnull
+    public PermissionManager getPermissionManager() {
+    	assert manager!=null;
+    	return manager;
+    }
+    
+    
+    public Path getConfigPath(ResourceLocation loc) {
+    	String name = loc.getNamespace()+"/"+loc.getPath();
+    	return config.resolve(name);
+    }
+    
+    public Path getStoragePath(ResourceLocation loc) {
+    	String name = loc.getNamespace()+"/"+loc.getPath();
+    	return config.resolve(name);
+    }
+    
+    public Path getConfigPath(String loc) {
+    	String name = loc.replace(':', '/');
+    	return config.resolve(name);
+    }
+    
+    public Path getStoragePath(String loc) {
+    	String name = loc.replace(':', '/');
+    	return config.resolve(name);
+    }
+    
+    public Path getPlayerProfileFile(UUID id) {
+    	return getStoragePath("gac14:core/players").resolve(id+".dat");
+    }
 }

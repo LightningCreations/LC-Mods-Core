@@ -25,6 +25,7 @@ public class PermissionManager
 	private static final Comparator<IGroup<ResourceLocation,PermissionManager,?>> byName = Comparators.with(stringOrder, IGroup::getName);
 	
 	private Set<IPermission<PermissionManager,String,?>> permissions = new TreeSet<>();
+	private Map<String,IPermission<PermissionManager,String,?>> permissionsMap = new TreeMap<>();
 	private Set<IGroup<ResourceLocation,PermissionManager,?>> groups = new TreeSet<>(byName);
 	private Map<ResourceLocation,IGroup<ResourceLocation,PermissionManager,?>> groupMap = new TreeMap<>(stringOrder);
 	
@@ -40,6 +41,7 @@ public class PermissionManager
 	public void register(IPermission<PermissionManager,String,?> permission) {
 		if(!permissions.add(permission))
 			throw new IllegalArgumentException("Permission Already Exists");
+		permissionsMap.put(permission.getName(), permission);
 	}
 	
 	public void register(IGroup<ResourceLocation,PermissionManager,?> group) {
@@ -58,6 +60,10 @@ public class PermissionManager
 	public Set<? extends IPermission<PermissionManager, String, ?>> getPermissionsByName(String name) {
 		// TODO Auto-generated method stub
 		return permissions.stream().filter(p->p.getName().startsWith(name+".")||p.getName().equalsIgnoreCase(name)).collect(TreeSet::new, TreeSet::add, TreeSet::addAll);
+	}
+	
+	public IPermission<PermissionManager, String, ?> getPermission(String name){
+		return permissionsMap.get(name);
 	}
 
 	@Override

@@ -23,10 +23,18 @@ import github.chorman0773.gac14.util.Comparators;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.INBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.Constants.NBT;
 import net.minecraftforge.common.util.INBTSerializable;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 
+@Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.FORGE)
 public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<NBTTagCompound> {
 	@Nullable private EntityPlayerMP player;
 	@Nonnull private final GameProfile profile;
@@ -74,6 +82,7 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 		EntityPlayerMP player = server.getPlayerList().getPlayerByUUID(profile.getId());
 		PlayerProfile prof = new PlayerProfile(player,profile,id);
 		profiles.put(profile.getId(), prof);
+		MinecraftForge.EVENT_BUS.post(new PlayerProfileEvent.Create(prof));
 		return prof;
 	}
 	
@@ -84,11 +93,19 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 		EntityPlayerMP player = server.getPlayerList().getPlayerByUUID(id);
 		PlayerProfile prof = new PlayerProfile(player,profile,id);
 		profiles.put(id, prof);
+		MinecraftForge.EVENT_BUS.post(new PlayerProfileEvent.Create(prof));
 		return prof;
 	}
 	
+	@SubscribeEvent(priority=EventPriority.LOWEST)
+	public static void loadProfileInfo(PlayerProfileEvent.Create info) {
+		
+	}
+	
 	public static PlayerProfile get(EntityPlayerMP player) {
-		return get(player.getUniqueID());
+		PlayerProfile prof = get(player.getUniqueID());
+		prof.getPlayer();
+		return prof;
 	}
 	
 	public EntityPlayerMP getPlayer() {
@@ -161,8 +178,28 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 
 	@Override
 	public void deserializeNBT(NBTTagCompound nbt) {
-		// TODO Auto-generated method stub
-		
+		PermissionManager manager = Gac14Core.getInstance().getPermissionManager();
+		NBTTagList permissions = nbt.getList("Permissions", NBT.TAG_STRING);
+		for(int i = 0;i<permissions.size();i++)
+			this.permissions.add(manager.getPermission(permissions.getString(i)));
+		NBTTagList revoked = nbt.getList("RevokedPermissions", NBT.TAG_STRING);
+		for(int i = 0;i<revoked.size();i++)
+			this.revoked.add(manager.getPermission(revoked.getString(i)));
+		NBTTagList groups = nbt.getList("Groups", NBT.TAG_STRING);
+		for(int i = 0;i<groups.size();i++)
+			this.groups.add(manager.getGroupByName(new ResourceLocation(groups.getString(i))));
+		NBTTagCompound tags = nbt.getCompound("Tags");
+		for(Map.Entry<ResourceLocation, PlayerInfoTag<?,?,?,?>> tag:this.tags.entrySet()) {
+			if(tag.getValue() instanceof PlayerInfoTransientTag<?,?,?,?>)
+				continue;
+			tag.getValue().readNBT(tags.getTag(tag.getKey().toString()));
+		}
+		permissionsDirty = true;
+	}
+	
+	public static void playerJoinsGame(PlayerEvent.PlayerLoggedInEvent logIn) {
+		EntityPlayerMP player = (EntityPlayerMP) logIn.getPlayer();
+		get(player);
 	}
 	
 }

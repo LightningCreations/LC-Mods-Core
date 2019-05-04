@@ -35,7 +35,13 @@ public abstract class PlayerInfoTag<Module extends Gac14Module<Module>, Type, NB
 	}
 	
 	public abstract NBTTag writeToNbt();
-	public abstract void readFromNbt(NBTTag tag);
+	protected abstract void readFromNbt(NBTTag tag);
+	
+	@SuppressWarnings("unchecked")
+	public void readNBT(INBTBase base) {
+		this.readFromNbt((NBTTag)base);
+	}
+	
 	public final Type get() {
 		return cl.cast(value);
 	}
