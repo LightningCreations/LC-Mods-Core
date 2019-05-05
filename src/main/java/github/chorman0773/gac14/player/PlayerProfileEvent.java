@@ -4,9 +4,11 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.eventbus.api.Event;
 
 public class PlayerProfileEvent extends Event {
-
+	
+	public final PlayerProfile player;
+	
 	public PlayerProfileEvent(PlayerProfile player) {
-		// TODO Auto-generated constructor stub
+		this.player = player;
 	}
 	
 	public static final class Create extends PlayerProfileEvent{
