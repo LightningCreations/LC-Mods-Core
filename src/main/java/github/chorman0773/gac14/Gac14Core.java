@@ -12,8 +12,17 @@ import net.minecraftforge.registries.RegistryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.google.common.base.Charsets;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonReader;
+
 import github.chorman0773.gac14.permissions.PermissionManager;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 
@@ -25,6 +34,8 @@ public class Gac14Core
 {
     // Directly reference a log4j logger.
     private static final Logger LOGGER = LogManager.getLogger();
+    
+    private static final JsonParser parser = new JsonParser();
 
     public Gac14Core() {
     	assert instance==null:"Initialization of Gac14Core shall occur exactly once";
@@ -88,25 +99,28 @@ public class Gac14Core
     	return manager;
     }
     
+    public JsonObject getConfig(ResourceLocation loc) throws IOException {
+    	return getConfig(loc.toString());
+    }
     
-    public Path getConfigPath(ResourceLocation loc) {
-    	String name = loc.getNamespace()+"/"+loc.getPath();
-    	return config.resolve(name);
+    public JsonObject getConfig(String loc) throws IOException {
+    	String name = loc.replace(':', '/')+".json";
+    	Path p = config.resolve(loc);
+    	try(InputStream strm = Files.newInputStream(p)){
+    		JsonReader reader = new JsonReader(new InputStreamReader(strm,Charsets.UTF_8));
+    		return parser.parse(reader).getAsJsonObject();
+    	}
     }
     
     public Path getStoragePath(ResourceLocation loc) {
     	String name = loc.getNamespace()+"/"+loc.getPath();
-    	return config.resolve(name);
+    	return this.data.resolve(name);
     }
     
-    public Path getConfigPath(String loc) {
-    	String name = loc.replace(':', '/');
-    	return config.resolve(name);
-    }
     
     public Path getStoragePath(String loc) {
     	String name = loc.replace(':', '/');
-    	return config.resolve(name);
+    	return this.data.resolve(name);
     }
     
     public Path getPlayerProfileFile(UUID id) {
