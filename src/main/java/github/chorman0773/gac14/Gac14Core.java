@@ -7,6 +7,7 @@ import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
+import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
 import net.minecraftforge.registries.RegistryBuilder;
 
 import org.apache.logging.log4j.LogManager;
@@ -18,12 +19,16 @@ import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 
 import github.chorman0773.gac14.permissions.PermissionManager;
+import github.chorman0773.gac14.server.DataEvent;
+import github.chorman0773.gac14.server.PeriodicEvent;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
@@ -65,7 +70,33 @@ public class Gac14Core
         manager = new PermissionManager();
         config = root.resolve("config");
         data = root.resolve("data");
-        
+        MinecraftForge.EVENT_BUS.post(new DataEvent.Load());
+        serverRunning = true;
+        periodicEventThread = new Thread(this::firePeriodicEvent);
+        periodicEventThread.setDaemon(true);
+        periodicEventThread.start();
+    }
+    
+    private boolean serverRunning = false;
+    private Thread periodicEventThread;
+    
+    private void firePeriodicEvent() {
+    	try {
+    	while(serverRunning) {
+    		Thread.sleep(300000);
+    		MinecraftForge.EVENT_BUS.post(new PeriodicEvent());
+    	}
+    	}catch(InterruptedException e) {}
+    }
+    
+    
+    
+    @SubscribeEvent
+    public void onServerStopping(FMLServerStoppingEvent event) throws InterruptedException {
+    	serverRunning = false;
+    	periodicEventThread.interrupt();
+    	periodicEventThread.join();
+    	MinecraftForge.EVENT_BUS.post(new DataEvent.Save());
     }
 
     // You can use EventBusSubscriber to automatically subscribe events on the contained class (this is subscribing to the MOD
