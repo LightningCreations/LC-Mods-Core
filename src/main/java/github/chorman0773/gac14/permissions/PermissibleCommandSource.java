@@ -41,79 +41,67 @@ public class PermissibleCommandSource extends CommandSource {
 	
 	@Override
 	public CommandSource withEntity(Entity entity) {
-		// TODO Auto-generated method stub
-		return null;
+		return new PermissibleCommandSource(this.permissible,this.source,this.getPos(),this.getPitchYaw(),this.getWorld(),this.permissionLevel,this.getName(),this.getDisplayName(),this.getServer(),entity,this.feedbackDisabled,this.resultConsumer,this.getEntityAnchorType());
 	}
 
 	@Override
-	public CommandSource withEntityAnchorType(Type p_201010_1_) {
+	public CommandSource withEntityAnchorType(Type anchor) {
 		// TODO Auto-generated method stub
-		return super.withEntityAnchorType(p_201010_1_);
+		return new PermissibleCommandSource(this.permissible,this.source,this.getPos(),this.getPitchYaw(),this.getWorld(),this.permissionLevel,this.getName(),this.getDisplayName(),this.getServer(),this.getEntity(),this.feedbackDisabled,this.resultConsumer,anchor);
 	}
 
 	@Override
 	public CommandSource withFeedbackDisabled() {
 		// TODO Auto-generated method stub
-		return super.withFeedbackDisabled();
+		return new PermissibleCommandSource(this.permissible,this.source,this.getPos(),this.getPitchYaw(),this.getWorld(),this.permissionLevel,this.getName(),this.getDisplayName(),this.getServer(),this.getEntity(),true,this.resultConsumer,this.getEntityAnchorType());
 	}
 
 	@Override
-	public CommandSource withMinPermissionLevel(int p_197026_1_) {
+	public CommandSource withMinPermissionLevel(int permissionLevel) {
 		// TODO Auto-generated method stub
-		return super.withMinPermissionLevel(p_197026_1_);
+		return withPermissionLevel(Math.max(permissionLevel, this.permissionLevel));
 	}
 
 	@Override
-	public CommandSource withPermissionLevel(int p_197033_1_) {
+	public CommandSource withPermissionLevel(int permissionLevel) {
 		// TODO Auto-generated method stub
-		return super.withPermissionLevel(p_197033_1_);
+		return new PermissibleCommandSource(this.permissible,this.source,this.getPos(),this.getPitchYaw(),this.getWorld(),permissionLevel,this.getName(),this.getDisplayName(),this.getServer(),this.getEntity(),this.feedbackDisabled,this.resultConsumer,this.getEntityAnchorType());
+	}
+
+
+	@Override
+	public CommandSource withPitchYaw(Vec2f pitchYaw) {
+		return new PermissibleCommandSource(this.permissible,this.source,this.getPos(),pitchYaw,this.getWorld(),this.permissionLevel,this.getName(),this.getDisplayName(),this.getServer(),this.getEntity(),this.feedbackDisabled,this.resultConsumer,this.getEntityAnchorType());
+	}
+
+
+	@Override
+	public CommandSource withPos(Vec3d pos) {
+		// TODO Auto-generated method stub
+		return new PermissibleCommandSource(this.permissible,this.source,pos,this.getPitchYaw(),this.getWorld(),this.permissionLevel,this.getName(),this.getDisplayName(),this.getServer(),this.getEntity(),this.feedbackDisabled,this.resultConsumer,this.getEntityAnchorType());
 	}
 
 	@Override
-	public CommandSource withPitchYaw(Entity p_201006_1_, Type p_201006_2_) throws CommandSyntaxException {
+	public CommandSource withResultConsumer(ResultConsumer<CommandSource> resultConsumer,
+			BinaryOperator<ResultConsumer<CommandSource>> combiner) {
 		// TODO Auto-generated method stub
-		return super.withPitchYaw(p_201006_1_, p_201006_2_);
+		return withResultConsumer(combiner.apply(resultConsumer, this.resultConsumer));
 	}
 
 	@Override
-	public CommandSource withPitchYaw(Vec2f p_201007_1_) {
+	public CommandSource withResultConsumer(ResultConsumer<CommandSource> resultConsumer) {
 		// TODO Auto-generated method stub
-		return super.withPitchYaw(p_201007_1_);
+		return new PermissibleCommandSource(this.permissible,this.source,this.getPos(),this.getPitchYaw(),this.getWorld(),this.permissionLevel,this.getName(),this.getDisplayName(),this.getServer(),this.getEntity(),this.feedbackDisabled,resultConsumer,this.getEntityAnchorType());
 	}
 
 	@Override
-	public CommandSource withPitchYaw(Vec3d p_201005_1_) throws CommandSyntaxException {
+	public CommandSource withWorld(WorldServer world) {
 		// TODO Auto-generated method stub
-		return super.withPitchYaw(p_201005_1_);
-	}
-
-	@Override
-	public CommandSource withPos(Vec3d p_201009_1_) {
-		// TODO Auto-generated method stub
-		return super.withPos(p_201009_1_);
-	}
-
-	@Override
-	public CommandSource withResultConsumer(ResultConsumer<CommandSource> p_209550_1_,
-			BinaryOperator<ResultConsumer<CommandSource>> p_209550_2_) {
-		// TODO Auto-generated method stub
-		return super.withResultConsumer(p_209550_1_, p_209550_2_);
-	}
-
-	@Override
-	public CommandSource withResultConsumer(ResultConsumer<CommandSource> p_197029_1_) {
-		// TODO Auto-generated method stub
-		return super.withResultConsumer(p_197029_1_);
-	}
-
-	@Override
-	public CommandSource withWorld(WorldServer p_201003_1_) {
-		// TODO Auto-generated method stub
-		return super.withWorld(p_201003_1_);
+		return new PermissibleCommandSource(this.permissible,this.source,this.getPos(),this.getPitchYaw(),world,this.permissionLevel,this.getName(),this.getDisplayName(),this.getServer(),this.getEntity(),this.feedbackDisabled,this.resultConsumer,this.getEntityAnchorType());
 	}
 
 	public static PermissibleCommandSource withPermissible(IBasicPermissible<UUID> permissible,CommandSource src) {
-		return new PermissibleCommandSource(permissible,src.source,src.getPos(),src.getPitchYaw(),src.getWorld(),src.permissionLevel,src.getName(),src.getDisplayName(),src.getServer(),src.getEntity(),src.feedbackDisable,src.resultConsumer,src.getEntityAnchorType());
+		return new PermissibleCommandSource(permissible,src.source,src.getPos(),src.getPitchYaw(),src.getWorld(),src.permissionLevel,src.getName(),src.getDisplayName(),src.getServer(),src.getEntity(),src.feedbackDisabled,src.resultConsumer,src.getEntityAnchorType());
 	}
 
 }
