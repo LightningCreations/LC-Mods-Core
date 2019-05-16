@@ -1,5 +1,8 @@
 package github.chorman0773.gac14.player;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
@@ -19,8 +22,10 @@ import github.chorman0773.gac14.permissions.IBasicPermissible;
 import github.chorman0773.gac14.permissions.IGroup;
 import github.chorman0773.gac14.permissions.IPermission;
 import github.chorman0773.gac14.permissions.PermissionManager;
+import github.chorman0773.gac14.server.DataEvent;
 import github.chorman0773.gac14.util.Comparators;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.INBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -46,6 +51,8 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 	
 	private Set<IPermission<PermissionManager,String,?>> cached;
 	private boolean permissionsDirty = true;
+	
+	private boolean dirty = false;
 	
 	@Nonnull private static final Gac14Core core = Gac14Core.getInstance(); 
 	@Nonnull private static final MinecraftServer server = core.getServer();
@@ -73,6 +80,7 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public <Type> void setTag(ResourceLocation key,Type t) {
 		((PlayerInfoTag)tags.get(key)).set((Object)t);
+		this.dirty = true;
 	}
 	
 	
@@ -99,8 +107,22 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 	}
 	
 	@SubscribeEvent(priority=EventPriority.LOWEST)
-	public static void loadProfileInfo(PlayerProfileEvent.Create info) {
-		
+	public static void loadProfileInfo(PlayerProfileEvent.Create info) throws IOException {
+		Path p = core.getPlayerProfileFile(info.player.id);
+		if(Files.exists(p))
+			info.player.deserializeNBT(CompressedStreamTools.readCompressed(Files.newInputStream(p)));
+	}
+	
+	@SubscribeEvent
+	public static void savePlayers(DataEvent.Save save) throws IOException {
+		for(UUID player:profiles.keySet()) {
+			PlayerProfile prof = profiles.get(player);
+			if(prof.dirty) {
+				Path p = core.getPlayerProfileFile(player);
+				CompressedStreamTools.writeCompressed(prof.serializeNBT(), Files.newOutputStream(p));
+				prof.dirty = false;
+			}
+		}
 	}
 	
 	public static PlayerProfile get(EntityPlayerMP player) {
@@ -120,21 +142,28 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 			return player = server.getPlayerList().getPlayerByUUID(id);
 	}
 	
+	public void markDirty() {
+		this.dirty = true;
+	}
+	
 	public void addPermission(IPermission<PermissionManager,String,?> permission) {
 		revoked.remove(permission);
 		permissions.add(permission);
 		permissionsDirty = true;
+		markDirty();
 	}
 	
 	public void removePermission(IPermission<PermissionManager,String,?> permission) {
 		permissions.remove(permission);
 		permissionsDirty = true;
+		markDirty();
 	}
 	
 	public void revokePermission(IPermission<PermissionManager,String,?> permission) {
 		permissions.remove(permission);
 		revoked.add(permission);
 		permissionsDirty = true;
+		markDirty();
 	}
 
 
@@ -211,6 +240,7 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 		for(Map.Entry<ResourceLocation, PlayerInfoTag<?,?,?,?>> tag:this.tags.entrySet())
 			tag.getValue().readNBT(tags.getTag(tag.getKey().toString()));
 		permissionsDirty = true;
+		dirty = false;
 	}
 	
 	public static void playerJoinsGame(PlayerEvent.PlayerLoggedInEvent logIn) {
