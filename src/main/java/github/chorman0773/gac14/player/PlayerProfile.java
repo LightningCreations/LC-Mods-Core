@@ -24,6 +24,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.INBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
@@ -171,8 +172,26 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 
 	@Override
 	public NBTTagCompound serializeNBT() {
-		// TODO Auto-generated method stub
-		return null;
+		NBTTagCompound nbt = new NBTTagCompound();
+		NBTTagList permissions = new NBTTagList();
+		for(IPermission<PermissionManager,String,?> permission:this.permissions)
+			permissions.add(new NBTTagString(permission.getName()));
+		nbt.setTag("Permissions", permissions);
+		NBTTagList revoked = new NBTTagList();
+		for(IPermission<PermissionManager,String,?> permission:this.revoked)
+			revoked.add(new NBTTagString(permission.getName()));
+		nbt.setTag("RevokedPermissions", revoked);
+		NBTTagList groups = new NBTTagList();
+		for(IGroup<ResourceLocation,PermissionManager,?> group:this.groups)
+			groups.add(new NBTTagString(group.getName().toString()));
+		nbt.setTag("Groups", groups);
+		NBTTagCompound tags = new NBTTagCompound();
+		for(Map.Entry<ResourceLocation, PlayerInfoTag<?,?,?,?>> tag:this.tags.entrySet())
+			if(tag.getValue() instanceof PlayerInfoTransientTag<?,?,?,?>)
+				continue;
+			else
+				tags.setTag(tag.getKey().toString(), tag.getValue().writeToNbt());
+		return nbt;
 	}
 
 
@@ -189,11 +208,8 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 		for(int i = 0;i<groups.size();i++)
 			this.groups.add(manager.getGroupByName(new ResourceLocation(groups.getString(i))));
 		NBTTagCompound tags = nbt.getCompound("Tags");
-		for(Map.Entry<ResourceLocation, PlayerInfoTag<?,?,?,?>> tag:this.tags.entrySet()) {
-			if(tag.getValue() instanceof PlayerInfoTransientTag<?,?,?,?>)
-				continue;
+		for(Map.Entry<ResourceLocation, PlayerInfoTag<?,?,?,?>> tag:this.tags.entrySet())
 			tag.getValue().readNBT(tags.getTag(tag.getKey().toString()));
-		}
 		permissionsDirty = true;
 	}
 	

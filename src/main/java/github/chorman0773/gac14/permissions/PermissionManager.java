@@ -98,5 +98,13 @@ public class PermissionManager
 		else
 			return getPermissible(src.source);//TODO figure out how to convert net.minecraft.command.CommandSource to net.minecraft.command.ICommandSource
 	}
+	
+	public Set<? extends IPermission<PermissionManager,String,?>> getPermissionsForContext(CommandContext<CommandSource> ctx){
+		return getPermissible(ctx.getSource()).getPermissions(this);
+	}
+	
+	public Set<? extends IGroup<ResourceLocation,PermissionManager,?>> getGroupsForContext(CommandContext<CommandSource> ctx){
+		return getPermissible(ctx.getSource()).getGroups(this);
+	}
 
 }
