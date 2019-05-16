@@ -10,7 +10,7 @@ import net.minecraft.world.dimension.DimensionType;
 
 public class RootCommandSource extends PermissibleCommandSource {
 	private RootCommandSource(RootCommandSender sender,MinecraftServer server,WorldServer world) {
-		super(sender, sender, new Vec3d(0,60,0), Vec2f.ZERO, world, 5, sender.getName().toString(), new TextComponentString("root"), server, null);
+		super(sender, sender, new Vec3d(0,60,0), Vec2f.ZERO, world, 4, sender.getName().toString(), new TextComponentString("root"), server, null);
 	}
 	public RootCommandSource(MinecraftServer server)
 	{

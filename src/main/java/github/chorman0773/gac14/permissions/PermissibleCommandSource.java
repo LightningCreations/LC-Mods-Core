@@ -27,6 +27,19 @@ public class PermissibleCommandSource extends CommandSource {
 	public IBasicPermissible<UUID> getPermissible(){
 		return permissible;
 	}
-
+	
+	public static PermissibleCommandSource withPermissible(IBasicPermissible<UUID> permissible,CommandSource src) {
+		int level = 0;
+		if(src.hasPermissionLevel(1))
+			level = 1;
+		else if(src.hasPermissionLevel(2))
+			level = 2;
+		else if(src.hasPermissionLevel(3))
+			level = 3;
+		else if(src.hasPermissionLevel(4))
+			level = 4;
+		
+		return new PermissibleCommandSource(permissible,src.getSource(),src.getPos(),src.getPitchYaw(),src.getWorld(),level,src.getName(),src.getDisplayName(),src.getServer(),src.getEntity());
+	}
 
 }

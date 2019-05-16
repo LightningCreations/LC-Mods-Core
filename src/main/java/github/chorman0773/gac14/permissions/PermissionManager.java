@@ -96,7 +96,7 @@ public class PermissionManager
 		if(src instanceof PermissibleCommandSource)
 			return ((PermissibleCommandSource)src).getPermissible();
 		else
-			return getPermissible((ICommandSource)null);//TODO figure out how to convert net.minecraft.command.CommandSource to net.minecraft.command.ICommandSource
+			return getPermissible(src.getSource());//TODO figure out how to convert net.minecraft.command.CommandSource to net.minecraft.command.ICommandSource
 	}
 
 }
