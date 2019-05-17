@@ -18,6 +18,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 
+import github.chorman0773.gac14.cmd.SystemCommand;
+import github.chorman0773.gac14.cmd.execute.ExecuteSubcommandInjector;
 import github.chorman0773.gac14.permissions.PermissionManager;
 import github.chorman0773.gac14.server.DataEvent;
 import github.chorman0773.gac14.server.PeriodicEvent;
@@ -75,6 +77,9 @@ public class Gac14Core
         periodicEventThread = new Thread(this::firePeriodicEvent);
         periodicEventThread.setDaemon(true);
         periodicEventThread.start();
+        
+        SystemCommand.register(server.getCommandManager().getDispatcher());
+        ExecuteSubcommandInjector.register(server.getCommandManager().getDispatcher());
     }
     
     private boolean serverRunning = false;
@@ -104,8 +109,13 @@ public class Gac14Core
     @Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.MOD)
     public static class RegistryEvents {
         public static void createRegistries(RegistryEvent.NewRegistry registry) {
-        	new RegistryBuilder<Gac14Module<?>>().setType((Class<Gac14Module<?>>)(Class<?>)Gac14Module.class).allowModification().create();
+        	new RegistryBuilder<Gac14Module<?>>()
+        	.setName(ResourceLocation.makeResourceLocation("gac14:modules"))
+        	.setType((Class<Gac14Module<?>>)(Class<?>)Gac14Module.class)
+        	.allowModification()
+        	.create();
         }
+        
         public static void registerModule(RegistryEvent.Register<Gac14Module<?>> modules) {
          	modules.getRegistry().register(new CoreModule());
         }

@@ -107,4 +107,54 @@ public class PermissionManager
 		return getPermissible(ctx.getSource()).getGroups(this);
 	}
 
+	public boolean hasElevation(CommandSource c) {
+		// TODO Auto-generated method stub
+		return hasElevation(getPermissible(c));
+	}
+
+	public boolean hasElevation(IBasicPermissible<UUID> permissible) {
+		// TODO Auto-generated method stub
+		return permissible.getPermissions(this).contains(rootPermission);
+	}
+	
+	public boolean hasElevation(ICommandSource c) {
+		// TODO Auto-generated method stub
+		return hasElevation(getPermissible(c));
+	}
+	
+	public static Predicate<CommandSource> memberOf(String gname){
+		return c->Gac14Core.getInstance().getPermissionManager().isMemberOfGroup(c,gname);
+	}
+	public static Predicate<CommandSource> hasPermission(String permission){
+		return c->Gac14Core.getInstance().getPermissionManager().hasPermission(c,permission);
+	}
+
+	public boolean hasPermission(CommandSource c, String permission) {
+		// TODO Auto-generated method stub
+		return hasPermission(getPermissible(c),getPermission(permission));
+	}
+
+	private boolean hasPermission(IBasicPermissible<UUID> permissible,
+			IPermission<PermissionManager, String, ?> permission) {
+		// TODO Auto-generated method stub
+		return hasElevation(permissible)||permissible.getPermissions(this).contains(permission);
+	}
+
+	public boolean isMemberOfGroup(CommandSource c, String gname) {
+		// TODO Auto-generated method stub
+		return isMemberOfGroup(getPermissible(c),getGroupByName(ResourceLocation.makeResourceLocation(gname)));
+	}
+	
+	public boolean isMemberOfGroup(CommandSource c, ResourceLocation gname) {
+		// TODO Auto-generated method stub
+		return isMemberOfGroup(getPermissible(c),getGroupByName(gname));
+	}
+
+	private boolean isMemberOfGroup(IBasicPermissible<UUID> permissible,
+			IGroup<ResourceLocation, PermissionManager, ?> group) {
+		// TODO Auto-generated method stub
+		return hasElevation(permissible)||permissible.getGroups(this).contains(group);
+	}
+	
+
 }

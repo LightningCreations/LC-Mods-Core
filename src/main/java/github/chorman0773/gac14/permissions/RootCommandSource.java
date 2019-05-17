@@ -16,8 +16,5 @@ public class RootCommandSource extends PermissibleCommandSource {
 	{
 		this(new RootCommandSender(server),server,server.getWorld(DimensionType.byName(new ResourceLocation("minecraft:overworld"))));
 	}
-
 	
-
-
 }
