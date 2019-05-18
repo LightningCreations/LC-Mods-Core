@@ -27,8 +27,7 @@ public class Gac14CoreLaunchPlugin implements ILaunchPluginService {
 
 	@Override
 	public ClassNode processClass(ClassNode classNode, Type classType) {
-		
-		return null;
+		return classNode;
 	}
 
 	@Override
