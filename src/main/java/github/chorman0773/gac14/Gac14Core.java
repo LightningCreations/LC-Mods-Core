@@ -108,16 +108,13 @@ public class Gac14Core
     // Event bus for receiving Registry Events)
     @Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.MOD)
     public static class RegistryEvents {
-        public static void createRegistries(RegistryEvent.NewRegistry registry) {
+        @SuppressWarnings("unchecked")
+		public static void createRegistries(RegistryEvent.NewRegistry registry) {
         	new RegistryBuilder<Gac14Module<?>>()
         	.setName(ResourceLocation.makeResourceLocation("gac14:modules"))
         	.setType((Class<Gac14Module<?>>)(Class<?>)Gac14Module.class)
         	.allowModification()
         	.create();
-        }
-        
-        public static void registerModule(RegistryEvent.Register<Gac14Module<?>> modules) {
-         	modules.getRegistry().register(new CoreModule());
         }
     }
     
