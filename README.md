@@ -1,5 +1,7 @@
 # Gac14 Core #
 
+[![Build Status](https://travis-ci.org/chorman0773/Gac14-Core.svg?branch=master)](https://travis-ci.org/chorman0773/Gac14-Core)
+
 The Gac14 Core is the base of the Gac14 Modular Modification System, which is used by Gac14 Modifications to interoperate without dependencies. 
 The Gac14 Core also provides a base interface to the Minecraft System, a permission API which is intended to replace minecraft's Permission Level System, and a Player Data Interface. 
 Documentation for these APIs Shall be made available at some later date which is TO BE DETERMINED. 
