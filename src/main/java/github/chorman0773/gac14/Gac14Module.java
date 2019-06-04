@@ -10,6 +10,17 @@ public abstract class Gac14Module<M extends Gac14Module<M>> implements IForgeReg
 	public abstract ResourceLocation getModuleName();
 	public abstract Version getModuleVersion();
 	
+	
+	public int getProviderStageFor(ResourceLocation modName) {
+		return 0;
+	}
+	
+	public boolean requiresProvider() {
+		return false;
+	}
+	
+	
+	
 	public Gac14Module() {
 		
 	}

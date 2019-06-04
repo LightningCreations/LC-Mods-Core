@@ -8,7 +8,10 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
+import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraftforge.registries.IForgeRegistryInternal;
 import net.minecraftforge.registries.RegistryBuilder;
+import net.minecraftforge.registries.RegistryManager;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -114,13 +117,26 @@ public class Gac14Core
         	.setName(ResourceLocation.makeResourceLocation("gac14:modules"))
         	.setType((Class<Gac14Module<?>>)(Class<?>)Gac14Module.class)
         	.allowModification()
+        	.add((IForgeRegistry.BakeCallback<Gac14Module<?>>)Gac14Core.instance::checkModuleRegistry)
         	.create();
         }
+    }
+
+	private void checkModuleRegistry(IForgeRegistryInternal<Gac14Module<?>> registry,RegistryManager owner) {
+		
+	}
+    
+    private final CoreModule module = new CoreModule();
+    
+    public CoreModule getModule() {
+    	return module;
     }
     
     @Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.FORGE)
     public static class RegisterStuff{
-    	 
+    	 public static void registerModules(RegistryEvent.Register<Gac14Module<?>> mod) {
+    		 mod.getRegistry().register(Gac14Core.instance.module);
+    	 }
     }
     
     private static Gac14Core instance;
