@@ -40,7 +40,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 
-@Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.FORGE)
+@Mod.EventBusSubscriber(modid="gac14-core",bus=Mod.EventBusSubscriber.Bus.FORGE)
 public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<NBTTagCompound> {
 	@Nullable private EntityPlayerMP player;
 	@Nonnull private final GameProfile profile;
@@ -84,6 +84,10 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 	}
 	
 	
+	/**
+	 * Gets a player by the associated GameProfile. 
+	 * 
+	 */
 	public static PlayerProfile get(GameProfile profile) {
 		final UUID id = profile.getId();
 		if(profiles.containsKey(id))

@@ -61,6 +61,10 @@ public class Gac14Core
     private Path data;
     private Path players;
     
+    /**
+     * Gets the active MinecraftServer.
+     * If this method is called before the completion of onServerStarting or after the completetion of onServerStopping, the behavior is undefined.
+     */
     @Nonnull
     public MinecraftServer getServer() {
     	assert server!=null:"Server has not been initialized. Cannot be called until after onServerStarting has completed";
@@ -141,6 +145,9 @@ public class Gac14Core
     
     private static Gac14Core instance;
 
+    /**
+     * Obtains the instance of the Gac14Core.
+     */
     @Nonnull
 	public static Gac14Core getInstance() {
 		assert instance!=null:"Mod Construction Has not occured yet, Construction Must Complete";
