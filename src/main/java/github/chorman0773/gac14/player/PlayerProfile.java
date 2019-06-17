@@ -150,6 +150,13 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 		this.dirty = true;
 	}
 	
+	/**
+	* Adds the given permission to this players set of permissions.
+	* After this call, that permission, and all children that are more general than any revoked permission will appear in the result of getPermissions().
+	* 
+	* Complexity Guarantee:
+	* O(logn) or Amortized Constant Time (O(1) with O(n) permissible some times).
+	*/
 	public void addPermission(IPermission<PermissionManager,String,?> permission) {
 		revoked.remove(permission);
 		permissions.add(permission);
