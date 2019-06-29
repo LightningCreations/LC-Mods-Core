@@ -1,0 +1,8 @@
+{
+	"1.13.2":{
+		"1.0":"First Build",
+		"1.1":"Fake Release",
+		"1.2":"Majority of Working Code",
+		"1.3":"Addded PermissionHandlerAdapter, and NamedGroups"
+	}
+}

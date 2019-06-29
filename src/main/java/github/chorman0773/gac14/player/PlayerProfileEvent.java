@@ -5,6 +5,20 @@ import net.minecraftforge.eventbus.api.Event;
 
 public class PlayerProfileEvent extends Event {
 	
+	/**
+	 * Fired before Create if the new Profile has never been created before.
+	 * @author chorm
+	 *
+	 */
+	public static final class New extends PlayerProfileEvent {
+
+		public New(PlayerProfile player) {
+			super(player);
+			// TODO Auto-generated constructor stub
+		}
+
+	}
+
 	public final PlayerProfile player;
 	
 	public PlayerProfileEvent(PlayerProfile player) {

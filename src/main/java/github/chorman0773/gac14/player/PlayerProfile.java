@@ -18,6 +18,7 @@ import com.mojang.authlib.GameProfile;
 
 import github.chorman0773.gac14.Gac14Core;
 import github.chorman0773.gac14.Gac14Module;
+import github.chorman0773.gac14.permissions.AdapterGroupOppedPlayer;
 import github.chorman0773.gac14.permissions.IBasicPermissible;
 import github.chorman0773.gac14.permissions.IGroup;
 import github.chorman0773.gac14.permissions.IPermission;
@@ -115,6 +116,8 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 		Path p = core.getPlayerProfileFile(info.player.id);
 		if(Files.exists(p))
 			info.player.deserializeNBT(CompressedStreamTools.readCompressed(Files.newInputStream(p)));
+		else
+			MinecraftForge.EVENT_BUS.post(new PlayerProfileEvent.New(info.player));
 	}
 	
 	@SubscribeEvent
@@ -154,8 +157,13 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 	* Adds the given permission to this players set of permissions.
 	* After this call, that permission, and all children that are more general than any revoked permission will appear in the result of getPermissions().
 	* 
+	* The permission, but not any of its children, are added to the list of explicit permissions.
+	* 
 	* Complexity Guarantee:
 	* O(logn) or Amortized Constant Time (O(1) with O(n) permissible some times).
+	* 
+	* Postconditions:
+	* After this call, reguardless of whether or not it has any observable result, invalidates all previous calls to getPermissions()
 	*/
 	public void addPermission(IPermission<PermissionManager,String,?> permission) {
 		revoked.remove(permission);
@@ -164,6 +172,20 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 		markDirty();
 	}
 	
+	/**
+	 * Removes the given permission from the explicit permissions list
+	 * This removes this permission iff its not implied by any other explicit permission,
+	 *  then all permissions implied by this permission are removed also if they are not an explicit permission, or implied by an explicit permission.
+	 * 
+	 * Complexity Guarantee:
+	 * This call guarantees O(n). 
+	 * 
+	 * Additionally, if the passed permission is the most specific node it implies which is an explicit permission,
+	 *  or it is not an explicit permission, Guarantees either O(logn) or Amortized Constant Time.
+	 *  
+	 * Postconditions:
+	 * After this call, reguardless of if any changes occured, this method invalidates any previous results of getPermissions()
+	 */
 	public void removePermission(IPermission<PermissionManager,String,?> permission) {
 		permissions.remove(permission);
 		permissionsDirty = true;
@@ -185,6 +207,13 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 	}
 
 
+	/**
+	 * Gets the set of all permissions.
+	 * The result of this method is invalidated on any call to addPermission, removePermission, and revokePermission.
+	 * <br/>
+	 * Complexity Guarantee:<br/>
+	 * O(n^2)
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public Set<? extends IPermission<PermissionManager, String, ?>> getPermissions(PermissionManager manager) {
@@ -257,6 +286,25 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 	public static void playerJoinsGame(PlayerEvent.PlayerLoggedInEvent logIn) {
 		EntityPlayerMP player = (EntityPlayerMP) logIn.getPlayer();
 		get(player);
+	}
+
+
+	public GameProfile getGameProfile() {
+		// TODO Auto-generated method stub
+		return this.profile;
+	}
+
+
+	public void joinGroup(IGroup<ResourceLocation,PermissionManager,?> group) {
+		this.groups.add(group);
+		permissionsDirty = true;
+		markDirty();
+	}
+	
+	public void leaveGroup(IGroup<ResourceLocation,PermissionManager,?> group) {
+		this.groups.remove(group);
+		permissionsDirty = true;
+		markDirty();
 	}
 	
 }

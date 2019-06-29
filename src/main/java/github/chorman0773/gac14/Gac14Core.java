@@ -6,12 +6,14 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryInternal;
 import net.minecraftforge.registries.RegistryBuilder;
 import net.minecraftforge.registries.RegistryManager;
+import net.minecraftforge.server.permission.PermissionAPI;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,6 +25,7 @@ import com.google.gson.stream.JsonReader;
 
 import github.chorman0773.gac14.cmd.SystemCommand;
 import github.chorman0773.gac14.cmd.execute.ExecuteSubcommandInjector;
+import github.chorman0773.gac14.permissions.PermissionHandlerAdapter;
 import github.chorman0773.gac14.permissions.PermissionManager;
 import github.chorman0773.gac14.server.DataEvent;
 import github.chorman0773.gac14.server.PeriodicEvent;
@@ -51,9 +54,16 @@ public class Gac14Core
     	assert instance==null:"Initialization of Gac14Core shall occur exactly once";
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
+        MinecraftForge.EVENT_BUS.addListener(this::setup);
         instance = this;
         
     }
+    
+    public void setup(FMLCommonSetupEvent event) {
+    	manager = new PermissionManager();
+    	PermissionAPI.setPermissionHandler(new PermissionHandlerAdapter());
+    }
+    
     private MinecraftServer server;
     private PermissionManager manager;
     private Path root;
@@ -76,7 +86,7 @@ public class Gac14Core
     public void onServerStarting(FMLServerStartingEvent event) {
         server = event.getServer();
         root = server.getDataDirectory().toPath();
-        manager = new PermissionManager();
+        
         config = root.resolve("config");
         data = root.resolve("data");
         MinecraftForge.EVENT_BUS.post(new DataEvent.Load());
