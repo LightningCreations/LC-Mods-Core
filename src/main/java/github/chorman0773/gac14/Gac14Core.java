@@ -104,10 +104,10 @@ public class Gac14Core
     
     private void firePeriodicEvent() {
     	try {
-    	while(serverRunning) {
-    		Thread.sleep(300000);
-    		MinecraftForge.EVENT_BUS.post(new PeriodicEvent());
-    	}
+	    	while(serverRunning) {
+	    		Thread.sleep(600000);
+	    		MinecraftForge.EVENT_BUS.post(new PeriodicEvent());
+	    	}
     	}catch(InterruptedException e) {}
     }
     
@@ -131,7 +131,6 @@ public class Gac14Core
         	.setName(ResourceLocation.makeResourceLocation("gac14:modules"))
         	.setType((Class<Gac14Module<?>>)(Class<?>)Gac14Module.class)
         	.allowModification()
-        	.add((IForgeRegistry.BakeCallback<Gac14Module<?>>)Gac14Core.instance::checkModuleRegistry)
         	.create();
         }
     }

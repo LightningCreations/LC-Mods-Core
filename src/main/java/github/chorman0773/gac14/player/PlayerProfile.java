@@ -18,7 +18,6 @@ import com.mojang.authlib.GameProfile;
 
 import github.chorman0773.gac14.Gac14Core;
 import github.chorman0773.gac14.Gac14Module;
-import github.chorman0773.gac14.permissions.AdapterGroupOppedPlayer;
 import github.chorman0773.gac14.permissions.IBasicPermissible;
 import github.chorman0773.gac14.permissions.IGroup;
 import github.chorman0773.gac14.permissions.IPermission;
@@ -122,6 +121,7 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 	
 	@SubscribeEvent
 	public static void savePlayers(DataEvent.Save save) throws IOException {
+		Set<UUID> idsToPurge = new TreeSet<>();
 		for(UUID player:profiles.keySet()) {
 			PlayerProfile prof = profiles.get(player);
 			if(prof.dirty) {
@@ -129,8 +129,16 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 				CompressedStreamTools.writeCompressed(prof.serializeNBT(), Files.newOutputStream(p));
 				prof.dirty = false;
 			}
+			if(prof.getPlayer()==null)//IE. the player is offline
+				idsToPurge.add(prof.id);
 		}
+		for(UUID id:idsToPurge)
+			profiles.remove(id);
+		
 	}
+	
+	public 
+	
 	
 	public static PlayerProfile get(EntityPlayerMP player) {
 		PlayerProfile prof = get(player.getUniqueID());
