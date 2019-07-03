@@ -137,8 +137,6 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 		
 	}
 	
-	public 
-	
 	
 	public static PlayerProfile get(EntityPlayerMP player) {
 		PlayerProfile prof = get(player.getUniqueID());
