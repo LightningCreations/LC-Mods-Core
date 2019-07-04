@@ -15,7 +15,7 @@ import github.chorman0773.gac14.player.PlayerProfile;
 import github.chorman0773.gac14.util.Comparators;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.ICommandSource;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
@@ -84,8 +84,8 @@ public class PermissionManager
 	public IBasicPermissible<UUID> getPermissible(ICommandSource src){
 		if(src instanceof MinecraftServer)
 			return root.getPermissible();
-		else if(src instanceof EntityPlayerMP)
-			return PlayerProfile.get((EntityPlayerMP)src);
+		else if(src instanceof ServerPlayerEntity)
+			return PlayerProfile.get((ServerPlayerEntity)src);
 		else if(src instanceof IBasicPermissible<?>)
 			return ((IBasicPermissible<UUID>)src);
 		else
@@ -142,7 +142,7 @@ public class PermissionManager
 
 	public boolean isMemberOfGroup(CommandSource c, String gname) {
 		// TODO Auto-generated method stub
-		return isMemberOfGroup(getPermissible(c),getGroupByName(ResourceLocation.makeResourceLocation(gname)));
+		return isMemberOfGroup(getPermissible(c),getGroupByName(new ResourceLocation(gname)));
 	}
 	
 	public boolean isMemberOfGroup(CommandSource c, ResourceLocation gname) {

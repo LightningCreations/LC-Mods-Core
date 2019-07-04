@@ -128,9 +128,11 @@ public class Gac14Core
         @SuppressWarnings("unchecked")
 		public static void createRegistries(RegistryEvent.NewRegistry registry) {
         	new RegistryBuilder<Gac14Module<?>>()
-        	.setName(ResourceLocation.makeResourceLocation("gac14:modules"))
+        	.setName(new ResourceLocation("gac14:modules"))
         	.setType((Class<Gac14Module<?>>)(Class<?>)Gac14Module.class)
-        	.allowModification()
+        	.disableSync()
+        	.disableOverrides()
+        	.disableSaving()
         	.create();
         }
     }

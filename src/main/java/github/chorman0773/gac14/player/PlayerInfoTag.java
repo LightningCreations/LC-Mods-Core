@@ -3,10 +3,10 @@ package github.chorman0773.gac14.player;
 import javax.annotation.Nonnull;
 
 import github.chorman0773.gac14.Gac14Module;
-import net.minecraft.nbt.INBTBase;
+import net.minecraft.nbt.INBT;
 import net.minecraft.util.ResourceLocation;
 
-public abstract class PlayerInfoTag<Module extends Gac14Module<Module>, Type, NBTTag extends INBTBase,PlayerInfoT extends PlayerInfoTag<Module,Type,NBTTag,PlayerInfoT>> implements Cloneable {
+public abstract class PlayerInfoTag<Module extends Gac14Module<Module>, Type, NBTTag extends INBT,PlayerInfoT extends PlayerInfoTag<Module,Type,NBTTag,PlayerInfoT>> implements Cloneable {
 	private Type value;
 	@Nonnull protected final Module mod;
 	@Nonnull protected final String name;
@@ -38,7 +38,7 @@ public abstract class PlayerInfoTag<Module extends Gac14Module<Module>, Type, NB
 	protected abstract void readFromNbt(NBTTag tag);
 	
 	@SuppressWarnings("unchecked")
-	public void readNBT(INBTBase base) {
+	public void readNBT(INBT base) {
 		this.readFromNbt((NBTTag)base);
 	}
 	

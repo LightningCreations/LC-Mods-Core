@@ -1,6 +1,7 @@
 package github.chorman0773.gac14.coremod;
 
 import java.nio.file.Path;
+import java.util.EnumSet;
 
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
@@ -26,20 +27,23 @@ public class Gac14CoreLaunchPlugin implements ILaunchPluginService {
 	}
 
 	@Override
-	public ClassNode processClass(ClassNode classNode, Type classType) {
-		return classNode;
-	}
-
-	@Override
 	public <T> T getExtension() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+
 	@Override
-	public boolean handlesClass(Type classType, boolean isEmpty) {
+	public boolean processClass(Phase phase, ClassNode classNode, Type classType) {
 		// TODO Auto-generated method stub
 		return false;
 	}
+
+	@Override
+	public EnumSet<Phase> handlesClass(Type classType, boolean isEmpty) {
+		// TODO Auto-generated method stub
+		return EnumSet.noneOf(Phase.class);
+	}
+	
 
 }

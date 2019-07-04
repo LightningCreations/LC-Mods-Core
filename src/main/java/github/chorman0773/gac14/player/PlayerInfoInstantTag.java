@@ -4,10 +4,10 @@ import java.time.Duration;
 import java.time.Instant;
 
 import github.chorman0773.gac14.Gac14Module;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 
 public class PlayerInfoInstantTag<Module extends Gac14Module<Module>>
-		extends PlayerInfoTag<Module, Instant, NBTTagCompound, PlayerInfoInstantTag<Module>> {
+		extends PlayerInfoTag<Module, Instant, CompoundNBT, PlayerInfoInstantTag<Module>> {
 
 	public PlayerInfoInstantTag(Module mod, String name) {
 		super(mod, name, Instant.EPOCH, Instant.class);
@@ -15,16 +15,16 @@ public class PlayerInfoInstantTag<Module extends Gac14Module<Module>>
 	}
 
 	@Override
-	public NBTTagCompound writeToNbt() {
-		NBTTagCompound ret = new NBTTagCompound();
+	public CompoundNBT writeToNbt() {
+		CompoundNBT ret = new CompoundNBT();
 		Instant val = get();
-		ret.setLong("Seconds", val.getEpochSecond());
-		ret.setInt("Nanos",val.getNano());
+		ret.putLong("Seconds", val.getEpochSecond());
+		ret.putInt("Nanos",val.getNano());
 		return ret;
 	}
 
 	@Override
-	public void readFromNbt(NBTTagCompound tag) {
+	public void readFromNbt(CompoundNBT tag) {
 		long seconds = tag.getLong("Seconds");
 		int nanos = tag.getInt("Nanos");
 		set(Instant.ofEpochSecond(seconds, nanos));

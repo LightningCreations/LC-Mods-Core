@@ -6,7 +6,7 @@ import com.mojang.brigadier.tree.CommandNode;
 
 import github.chorman0773.gac14.Gac14Module;
 import net.minecraft.command.CommandSource;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryManager;
 
@@ -25,9 +25,9 @@ public final class SystemGetInfo extends SystemSubcommand {
 	private int run(CommandContext<CommandSource> ctx) {
 		IForgeRegistry<Gac14Module<?>> registry = RegistryManager.ACTIVE.getRegistry(Gac14Module.class);
 		CommandSource src = ctx.getSource();
-		src.sendFeedback(new TextComponentString("Modules Loaded:"),false);
+		src.sendFeedback(new StringTextComponent("Modules Loaded:"),false);
 		for(Gac14Module<?> entry:registry.getValues())
-			src.sendFeedback(new TextComponentString("\t").appendText(entry.getModuleName().toString()).appendText(" :\t\t\t").appendText(entry.getModuleVersion().toString()), false);
+			src.sendFeedback(new StringTextComponent("\t").appendText(entry.getModuleName().toString()).appendText(" :\t\t\t").appendText(entry.getModuleVersion().toString()), false);
 		return 0;
 	}
 	

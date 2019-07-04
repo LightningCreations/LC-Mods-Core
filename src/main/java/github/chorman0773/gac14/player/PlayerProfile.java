@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -24,12 +23,12 @@ import github.chorman0773.gac14.permissions.IPermission;
 import github.chorman0773.gac14.permissions.PermissionManager;
 import github.chorman0773.gac14.server.DataEvent;
 import github.chorman0773.gac14.util.Comparators;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.nbt.INBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
-import net.minecraft.nbt.NBTTagString;
+import net.minecraft.nbt.INBT;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
+import net.minecraft.nbt.StringNBT;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
@@ -39,15 +38,18 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
 
 @Mod.EventBusSubscriber(modid="gac14-core",bus=Mod.EventBusSubscriber.Bus.FORGE)
-public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<NBTTagCompound> {
-	@Nullable private EntityPlayerMP player;
+public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<CompoundNBT> {
+	@Nullable private ServerPlayerEntity player;
 	@Nonnull private final GameProfile profile;
 	@Nonnull private final UUID id;
 	private Set<IGroup<ResourceLocation,PermissionManager,?>> groups = new TreeSet<>(Comparators.with(Comparators.with(String.CASE_INSENSITIVE_ORDER, ResourceLocation::toString), IGroup::getName));
 	private Set<IPermission<PermissionManager,String,?>> permissions = new TreeSet<>();
 	private Set<IPermission<PermissionManager,String,?>> revoked = new TreeSet<>();
+	
+	private Map<ResourceLocation,Runnable> updaters = new TreeMap<>(Comparators.stringOrder);
 	
 	private Set<IPermission<PermissionManager,String,?>> cached;
 	private boolean permissionsDirty = true;
@@ -60,17 +62,37 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 	
 	@Nonnull private Map<ResourceLocation,PlayerInfoTag<?,?,?,?>> tags = new TreeMap<>((a,b)->a.toString().compareToIgnoreCase(b.toString()));
 	
-	private PlayerProfile(EntityPlayerMP player,GameProfile profile,UUID id) {
+	private PlayerProfile(ServerPlayerEntity player,GameProfile profile,UUID id) {
 		this.player = player;
 		this.profile = profile;
 		this.id = id;
 	}
 	
 	
-	public <Module extends Gac14Module<Module>,Type,NBTTag extends INBTBase,InfoT extends PlayerInfoTag<Module,Type,NBTTag,InfoT>> void registerKey(InfoT tag) {
+	public <Module extends Gac14Module<Module>,Type,NBTTag extends INBT,InfoT extends PlayerInfoTag<Module,Type,NBTTag,InfoT>> void registerKey(InfoT tag) {
 		if(tags.putIfAbsent(tag.key, tag)!=null)
 			throw new IllegalArgumentException("Tag with key "+tag.key+" already exists");
 	}
+	
+	public void subscribeToUpdates(ResourceLocation loc,Runnable r) {
+		updaters.put(loc, r);
+	}
+	
+	public void unsubscribe(ResourceLocation loc) {
+		updaters.remove(loc);
+	}
+	
+	public void update() {
+		updaters
+			.values()
+			.forEach(Runnable::run);
+	}
+	
+	@SubscribeEvent
+	public static void doTick(ServerTickEvent e) {
+		profiles.values().parallelStream().forEach(PlayerProfile::update);
+	}
+	
 	
 	@SuppressWarnings("unchecked")
 	public <Type> Type getTag(ResourceLocation key) {
@@ -92,7 +114,7 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 		final UUID id = profile.getId();
 		if(profiles.containsKey(id))
 			return profiles.get(id);
-		EntityPlayerMP player = server.getPlayerList().getPlayerByUUID(profile.getId());
+		ServerPlayerEntity player = server.getPlayerList().getPlayerByUUID(profile.getId());
 		PlayerProfile prof = new PlayerProfile(player,profile,id);
 		profiles.put(profile.getId(), prof);
 		MinecraftForge.EVENT_BUS.post(new PlayerProfileEvent.Create(prof));
@@ -103,7 +125,7 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 		if(profiles.containsKey(id))
 			return profiles.get(id);
 		GameProfile profile = server.getPlayerProfileCache().getProfileByUUID(id);
-		EntityPlayerMP player = server.getPlayerList().getPlayerByUUID(id);
+		ServerPlayerEntity player = server.getPlayerList().getPlayerByUUID(id);
 		PlayerProfile prof = new PlayerProfile(player,profile,id);
 		profiles.put(id, prof);
 		MinecraftForge.EVENT_BUS.post(new PlayerProfileEvent.Create(prof));
@@ -138,13 +160,13 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 	}
 	
 	
-	public static PlayerProfile get(EntityPlayerMP player) {
+	public static PlayerProfile get(ServerPlayerEntity player) {
 		PlayerProfile prof = get(player.getUniqueID());
 		prof.getPlayer();
 		return prof;
 	}
 	
-	public EntityPlayerMP getPlayer() {
+	public ServerPlayerEntity getPlayer() {
 		if(player!=null) {
 			if(player.hasDisconnected())
 				return player = null;
@@ -246,51 +268,51 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 
 
 	@Override
-	public NBTTagCompound serializeNBT() {
-		NBTTagCompound nbt = new NBTTagCompound();
-		NBTTagList permissions = new NBTTagList();
+	public CompoundNBT serializeNBT() {
+		CompoundNBT nbt = new CompoundNBT();
+		ListNBT permissions = new ListNBT();
 		for(IPermission<PermissionManager,String,?> permission:this.permissions)
-			permissions.add(new NBTTagString(permission.getName()));
-		nbt.setTag("Permissions", permissions);
-		NBTTagList revoked = new NBTTagList();
+			permissions.add(new StringNBT(permission.getName()));
+		nbt.put("Permissions", permissions);
+		ListNBT revoked = new ListNBT();
 		for(IPermission<PermissionManager,String,?> permission:this.revoked)
-			revoked.add(new NBTTagString(permission.getName()));
-		nbt.setTag("RevokedPermissions", revoked);
-		NBTTagList groups = new NBTTagList();
+			revoked.add(new StringNBT(permission.getName()));
+		nbt.put("RevokedPermissions", revoked);
+		ListNBT groups = new ListNBT();
 		for(IGroup<ResourceLocation,PermissionManager,?> group:this.groups)
-			groups.add(new NBTTagString(group.getName().toString()));
-		nbt.setTag("Groups", groups);
-		NBTTagCompound tags = new NBTTagCompound();
+			groups.add(new StringNBT(group.getName().toString()));
+		nbt.put("Groups", groups);
+		CompoundNBT tags = new CompoundNBT();
 		for(Map.Entry<ResourceLocation, PlayerInfoTag<?,?,?,?>> tag:this.tags.entrySet())
 			if(tag.getValue() instanceof PlayerInfoTransientTag<?,?,?,?>)
 				continue;
 			else
-				tags.setTag(tag.getKey().toString(), tag.getValue().writeToNbt());
+				tags.put(tag.getKey().toString(), tag.getValue().writeToNbt());
 		return nbt;
 	}
 
 
 	@Override
-	public void deserializeNBT(NBTTagCompound nbt) {
+	public void deserializeNBT(CompoundNBT nbt) {
 		PermissionManager manager = Gac14Core.getInstance().getPermissionManager();
-		NBTTagList permissions = nbt.getList("Permissions", NBT.TAG_STRING);
+		ListNBT permissions = nbt.getList("Permissions", NBT.TAG_STRING);
 		for(int i = 0;i<permissions.size();i++)
 			this.permissions.add(manager.getPermission(permissions.getString(i)));
-		NBTTagList revoked = nbt.getList("RevokedPermissions", NBT.TAG_STRING);
+		ListNBT revoked = nbt.getList("RevokedPermissions", NBT.TAG_STRING);
 		for(int i = 0;i<revoked.size();i++)
 			this.revoked.add(manager.getPermission(revoked.getString(i)));
-		NBTTagList groups = nbt.getList("Groups", NBT.TAG_STRING);
+		ListNBT groups = nbt.getList("Groups", NBT.TAG_STRING);
 		for(int i = 0;i<groups.size();i++)
 			this.groups.add(manager.getGroupByName(new ResourceLocation(groups.getString(i))));
-		NBTTagCompound tags = nbt.getCompound("Tags");
+		CompoundNBT tags = nbt.getCompound("Tags");
 		for(Map.Entry<ResourceLocation, PlayerInfoTag<?,?,?,?>> tag:this.tags.entrySet())
-			tag.getValue().readNBT(tags.getTag(tag.getKey().toString()));
+			tag.getValue().readNBT(tags.get(tag.getKey().toString()));
 		permissionsDirty = true;
 		dirty = false;
 	}
 	
 	public static void playerJoinsGame(PlayerEvent.PlayerLoggedInEvent logIn) {
-		EntityPlayerMP player = (EntityPlayerMP) logIn.getPlayer();
+		ServerPlayerEntity player = (ServerPlayerEntity) logIn.getPlayer();
 		get(player);
 	}
 

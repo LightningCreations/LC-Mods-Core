@@ -3,10 +3,10 @@ package github.chorman0773.gac14.player;
 import java.time.Duration;
 
 import github.chorman0773.gac14.Gac14Module;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 
 public class PlayerInfoDurationTag<Module extends Gac14Module<Module>>
-		extends PlayerInfoTag<Module, Duration, NBTTagCompound, PlayerInfoDurationTag<Module>> {
+		extends PlayerInfoTag<Module, Duration, CompoundNBT, PlayerInfoDurationTag<Module>> {
 
 	public PlayerInfoDurationTag(Module mod, String name) {
 		super(mod, name, Duration.ZERO,Duration.class);
@@ -14,16 +14,16 @@ public class PlayerInfoDurationTag<Module extends Gac14Module<Module>>
 	}
 
 	@Override
-	public NBTTagCompound writeToNbt() {
-		NBTTagCompound ret = new NBTTagCompound();
+	public CompoundNBT writeToNbt() {
+		CompoundNBT ret = new CompoundNBT();
 		Duration val = get();
-		ret.setLong("Seconds", val.getSeconds());
-		ret.setInt("Nanos",val.getNano());
+		ret.putLong("Seconds", val.getSeconds());
+		ret.putInt("Nanos",val.getNano());
 		return ret;
 	}
 
 	@Override
-	public void readFromNbt(NBTTagCompound tag) {
+	public void readFromNbt(CompoundNBT tag) {
 		long seconds = tag.getLong("Seconds");
 		int nanos = tag.getInt("Nanos");
 		set(Duration.ofSeconds(seconds, nanos));

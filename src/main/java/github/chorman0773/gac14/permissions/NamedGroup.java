@@ -15,9 +15,9 @@ import github.chorman0773.gac14.server.DataEvent;
 import github.chorman0773.gac14.util.Comparators;
 import github.chorman0773.gac14.util.Helpers;
 import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
-import net.minecraft.nbt.NBTTagString;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
+import net.minecraft.nbt.StringNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.Constants.NBT;
@@ -62,20 +62,20 @@ public class NamedGroup implements IGroup<ResourceLocation, PermissionManager, N
 			if(!Files.exists(p))
 				return;
 			InputStream strm = Files.newInputStream(p);
-			NBTTagCompound comp = CompressedStreamTools.readCompressed(strm);
-			NBTTagList nodes = comp.getList("Nodes", NBT.TAG_STRING);
+			CompoundNBT comp = CompressedStreamTools.readCompressed(strm);
+			ListNBT nodes = comp.getList("Nodes", NBT.TAG_STRING);
 			nodes
 				.stream()
-				.map(Helpers.castTo(NBTTagString.class))
-				.map(NBTTagString::getString)
+				.map(Helpers.castTo(StringNBT.class))
+				.map(StringNBT::getString)
 				.map(manager::getPermission)
 				.forEachOrdered(impliedNodes::add);
-			NBTTagList groups = comp.getList("Groups", NBT.TAG_STRING);
+			ListNBT groups = comp.getList("Groups", NBT.TAG_STRING);
 			groups
 				.stream()
-				.map(Helpers.castTo(NBTTagString.class))
-				.map(NBTTagString::getString)
-				.map(ResourceLocation::makeResourceLocation)
+				.map(Helpers.castTo(StringNBT.class))
+				.map(StringNBT::getString)
+				.map(ResourceLocation::new)
 				.map(manager::getGroupByName)
 				.forEachOrdered(impliedGroups::add);
 		}catch(IOException e) {
@@ -88,20 +88,20 @@ public class NamedGroup implements IGroup<ResourceLocation, PermissionManager, N
 			String subpath = "groups/"+name.getNamespace()+"/"+name.getPath();
 			Path p = core.getStoragePath(new ResourceLocation("gac14",subpath));
 			OutputStream strm = Files.newOutputStream(p, StandardOpenOption.CREATE);
-			NBTTagCompound comp = new NBTTagCompound();
-			NBTTagList nodes = new NBTTagList();
+			CompoundNBT comp = new CompoundNBT();
+			ListNBT nodes = new ListNBT();
 			impliedNodes.stream()
 				.map(IPermission::getName)
-				.map(NBTTagString::new)
+				.map(StringNBT::new)
 				.forEachOrdered(nodes::add);
-			comp.setTag("Nodes", nodes);
-			NBTTagList groups = new NBTTagList();
+			comp.put("Nodes", nodes);
+			ListNBT groups = new ListNBT();
 			impliedGroups.stream()
 				.map(IGroup::getName)
 				.map(ResourceLocation::toString)
-				.map(NBTTagString::new)
+				.map(StringNBT::new)
 				.forEachOrdered(groups::add);
-			comp.setTag("Groups", groups);
+			comp.put("Groups", groups);
 			CompressedStreamTools.writeCompressed(comp, strm);
 		}catch(IOException e) {
 			throw new RuntimeException(e);

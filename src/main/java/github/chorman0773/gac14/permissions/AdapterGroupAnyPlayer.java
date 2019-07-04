@@ -51,7 +51,7 @@ class AdapterGroupAnyPlayer implements IGroup<ResourceLocation,PermissionManager
 	@Override
 	public ResourceLocation getName() {
 		// TODO Auto-generated method stub
-		return ResourceLocation.makeResourceLocation("gac14:__adapter/user");
+		return new ResourceLocation("gac14:__adapter/user");
 	}
 
 }

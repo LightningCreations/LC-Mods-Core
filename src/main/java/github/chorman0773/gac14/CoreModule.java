@@ -11,7 +11,7 @@ public final class CoreModule extends Gac14Module<CoreModule> {
 	@Override
 	public ResourceLocation getModuleName() {
 		// TODO Auto-generated method stub
-		return ResourceLocation.makeResourceLocation("gac14:core");
+		return new ResourceLocation("gac14:core");
 	}
 
 	@Override

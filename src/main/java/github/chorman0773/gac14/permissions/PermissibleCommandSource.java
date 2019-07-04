@@ -14,12 +14,12 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.world.WorldServer;
+import net.minecraft.world.ServerWorld;
 
 public class PermissibleCommandSource extends CommandSource {
 	private IBasicPermissible<UUID> permissible;
 	public PermissibleCommandSource(IBasicPermissible<UUID> permissible,ICommandSource source, Vec3d pos, Vec2f look,
-			WorldServer world, int permissionLevel, String name, ITextComponent nameComponent,
+			ServerWorld world, int permissionLevel, String name, ITextComponent nameComponent,
 			MinecraftServer server, Entity entity) {
 		super(source, pos, look, world, permissionLevel, name, nameComponent, server,
 				entity);
@@ -27,7 +27,7 @@ public class PermissibleCommandSource extends CommandSource {
 	}
 	
 	protected PermissibleCommandSource(IBasicPermissible<UUID> permissible,ICommandSource p_i49553_1_, Vec3d p_i49553_2_, Vec2f p_i49553_3_,
-			WorldServer p_i49553_4_, int p_i49553_5_, String p_i49553_6_, ITextComponent p_i49553_7_,
+			ServerWorld p_i49553_4_, int p_i49553_5_, String p_i49553_6_, ITextComponent p_i49553_7_,
 			MinecraftServer p_i49553_8_, Entity p_i49553_9_, boolean p_i49553_10_,
 			ResultConsumer<CommandSource> p_i49553_11_, Type p_i49553_12_) {
 		super(p_i49553_1_, p_i49553_2_, p_i49553_3_, p_i49553_4_, p_i49553_5_, p_i49553_6_, p_i49553_7_, p_i49553_8_,
@@ -41,19 +41,19 @@ public class PermissibleCommandSource extends CommandSource {
 	
 	@Override
 	public CommandSource withEntity(Entity entity) {
-		return new PermissibleCommandSource(this.permissible,this.source,this.getPos(),this.getPitchYaw(),this.getWorld(),this.permissionLevel,this.getName(),this.getDisplayName(),this.getServer(),entity,this.feedbackDisabled,this.resultConsumer,this.getEntityAnchorType());
+		return new PermissibleCommandSource(this.permissible,this.source,this.getPos(),this.getRotation(),this.getWorld(),this.permissionLevel,this.getName(),this.getDisplayName(),this.getServer(),entity,this.feedbackDisabled,this.resultConsumer,this.getEntityAnchorType());
 	}
 
 	@Override
 	public CommandSource withEntityAnchorType(Type anchor) {
 		// TODO Auto-generated method stub
-		return new PermissibleCommandSource(this.permissible,this.source,this.getPos(),this.getPitchYaw(),this.getWorld(),this.permissionLevel,this.getName(),this.getDisplayName(),this.getServer(),this.getEntity(),this.feedbackDisabled,this.resultConsumer,anchor);
+		return new PermissibleCommandSource(this.permissible,this.source,this.getPos(),this.getRotation(),this.getWorld(),this.permissionLevel,this.getName(),this.getDisplayName(),this.getServer(),this.getEntity(),this.feedbackDisabled,this.resultConsumer,anchor);
 	}
 
 	@Override
 	public CommandSource withFeedbackDisabled() {
 		// TODO Auto-generated method stub
-		return new PermissibleCommandSource(this.permissible,this.source,this.getPos(),this.getPitchYaw(),this.getWorld(),this.permissionLevel,this.getName(),this.getDisplayName(),this.getServer(),this.getEntity(),true,this.resultConsumer,this.getEntityAnchorType());
+		return new PermissibleCommandSource(this.permissible,this.source,this.getPos(),this.getRotation(),this.getWorld(),this.permissionLevel,this.getName(),this.getDisplayName(),this.getServer(),this.getEntity(),true,this.resultConsumer,this.getEntityAnchorType());
 	}
 
 	@Override
@@ -65,12 +65,12 @@ public class PermissibleCommandSource extends CommandSource {
 	@Override
 	public CommandSource withPermissionLevel(int permissionLevel) {
 		// TODO Auto-generated method stub
-		return new PermissibleCommandSource(this.permissible,this.source,this.getPos(),this.getPitchYaw(),this.getWorld(),permissionLevel,this.getName(),this.getDisplayName(),this.getServer(),this.getEntity(),this.feedbackDisabled,this.resultConsumer,this.getEntityAnchorType());
+		return new PermissibleCommandSource(this.permissible,this.source,this.getPos(),this.getRotation(),this.getWorld(),permissionLevel,this.getName(),this.getDisplayName(),this.getServer(),this.getEntity(),this.feedbackDisabled,this.resultConsumer,this.getEntityAnchorType());
 	}
 
 
 	@Override
-	public CommandSource withPitchYaw(Vec2f pitchYaw) {
+	public CommandSource withRotation(Vec2f pitchYaw) {
 		return new PermissibleCommandSource(this.permissible,this.source,this.getPos(),pitchYaw,this.getWorld(),this.permissionLevel,this.getName(),this.getDisplayName(),this.getServer(),this.getEntity(),this.feedbackDisabled,this.resultConsumer,this.getEntityAnchorType());
 	}
 
@@ -78,7 +78,7 @@ public class PermissibleCommandSource extends CommandSource {
 	@Override
 	public CommandSource withPos(Vec3d pos) {
 		// TODO Auto-generated method stub
-		return new PermissibleCommandSource(this.permissible,this.source,pos,this.getPitchYaw(),this.getWorld(),this.permissionLevel,this.getName(),this.getDisplayName(),this.getServer(),this.getEntity(),this.feedbackDisabled,this.resultConsumer,this.getEntityAnchorType());
+		return new PermissibleCommandSource(this.permissible,this.source,pos,this.getRotation(),this.getWorld(),this.permissionLevel,this.getName(),this.getDisplayName(),this.getServer(),this.getEntity(),this.feedbackDisabled,this.resultConsumer,this.getEntityAnchorType());
 	}
 
 	@Override
@@ -91,17 +91,17 @@ public class PermissibleCommandSource extends CommandSource {
 	@Override
 	public CommandSource withResultConsumer(ResultConsumer<CommandSource> resultConsumer) {
 		// TODO Auto-generated method stub
-		return new PermissibleCommandSource(this.permissible,this.source,this.getPos(),this.getPitchYaw(),this.getWorld(),this.permissionLevel,this.getName(),this.getDisplayName(),this.getServer(),this.getEntity(),this.feedbackDisabled,resultConsumer,this.getEntityAnchorType());
+		return new PermissibleCommandSource(this.permissible,this.source,this.getPos(),this.getRotation(),this.getWorld(),this.permissionLevel,this.getName(),this.getDisplayName(),this.getServer(),this.getEntity(),this.feedbackDisabled,resultConsumer,this.getEntityAnchorType());
 	}
 
 	@Override
-	public CommandSource withWorld(WorldServer world) {
+	public CommandSource withWorld(ServerWorld world) {
 		// TODO Auto-generated method stub
-		return new PermissibleCommandSource(this.permissible,this.source,this.getPos(),this.getPitchYaw(),world,this.permissionLevel,this.getName(),this.getDisplayName(),this.getServer(),this.getEntity(),this.feedbackDisabled,this.resultConsumer,this.getEntityAnchorType());
+		return new PermissibleCommandSource(this.permissible,this.source,this.getPos(),this.getRotation(),world,this.permissionLevel,this.getName(),this.getDisplayName(),this.getServer(),this.getEntity(),this.feedbackDisabled,this.resultConsumer,this.getEntityAnchorType());
 	}
 
 	public static PermissibleCommandSource withPermissible(IBasicPermissible<UUID> permissible,CommandSource src) {
-		return new PermissibleCommandSource(permissible,src.source,src.getPos(),src.getPitchYaw(),src.getWorld(),src.permissionLevel,src.getName(),src.getDisplayName(),src.getServer(),src.getEntity(),src.feedbackDisabled,src.resultConsumer,src.getEntityAnchorType());
+		return new PermissibleCommandSource(permissible,src.source,src.getPos(),src.getRotation(),src.getWorld(),src.permissionLevel,src.getName(),src.getDisplayName(),src.getServer(),src.getEntity(),src.feedbackDisabled,src.resultConsumer,src.getEntityAnchorType());
 	}
 
 }
