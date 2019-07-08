@@ -24,6 +24,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 
 import github.chorman0773.gac14.cmd.SystemCommand;
+import github.chorman0773.gac14.cmd.SystemGetInfo;
 import github.chorman0773.gac14.cmd.execute.ExecuteSubcommandInjector;
 import github.chorman0773.gac14.permissions.PermissionHandlerAdapter;
 import github.chorman0773.gac14.permissions.PermissionManager;
@@ -53,14 +54,16 @@ public class Gac14Core
     public Gac14Core() {
     	assert instance==null:"Initialization of Gac14Core shall occur exactly once";
         // Register ourselves for server and other game events we are interested in
-        MinecraftForge.EVENT_BUS.register(this);
+       LOGGER.debug("Gac14 Core: COnstruction");
+    	MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.addListener(this::setup);
         instance = this;
-        
+        LOGGER.info("Gac14Core: Construct");
     }
     
     public void setup(FMLCommonSetupEvent event) {
     	manager = new PermissionManager();
+    	LOGGER.info("Gac14Core: Setup");
     	PermissionAPI.setPermissionHandler(new PermissionHandlerAdapter());
     }
     
@@ -95,6 +98,7 @@ public class Gac14Core
         periodicEventThread.setDaemon(true);
         periodicEventThread.start();
         
+        SystemCommand.registerSubcommand(new SystemGetInfo());
         SystemCommand.register(server.getCommandManager().getDispatcher());
         ExecuteSubcommandInjector.register(server.getCommandManager().getDispatcher());
     }

@@ -9,9 +9,13 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.mojang.authlib.GameProfile;
 
@@ -49,7 +53,7 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 	private Set<IPermission<PermissionManager,String,?>> permissions = new TreeSet<>();
 	private Set<IPermission<PermissionManager,String,?>> revoked = new TreeSet<>();
 	
-	private Map<ResourceLocation,Runnable> updaters = new TreeMap<>(Comparators.stringOrder);
+	private Map<ResourceLocation,Consumer<PlayerProfile>> updaters = new TreeMap<>(Comparators.stringOrder);
 	
 	private Set<IPermission<PermissionManager,String,?>> cached;
 	private boolean permissionsDirty = true;
@@ -62,10 +66,14 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 	
 	@Nonnull private Map<ResourceLocation,PlayerInfoTag<?,?,?,?>> tags = new TreeMap<>((a,b)->a.toString().compareToIgnoreCase(b.toString()));
 	
+	private static final Logger LOGGER = LogManager.getLogger();
+	
 	private PlayerProfile(ServerPlayerEntity player,GameProfile profile,UUID id) {
+		
 		this.player = player;
 		this.profile = profile;
 		this.id = id;
+		LOGGER.info(String.format("Creating PlayerProfile Object for %s", profile));
 	}
 	
 	
@@ -74,7 +82,7 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 			throw new IllegalArgumentException("Tag with key "+tag.key+" already exists");
 	}
 	
-	public void subscribeToUpdates(ResourceLocation loc,Runnable r) {
+	public void subscribeToUpdates(ResourceLocation loc,Consumer<PlayerProfile> r) {
 		updaters.put(loc, r);
 	}
 	
@@ -85,7 +93,7 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 	public void update() {
 		updaters
 			.values()
-			.forEach(Runnable::run);
+			.forEach(c->c.accept(PlayerProfile.this));
 	}
 	
 	@SubscribeEvent

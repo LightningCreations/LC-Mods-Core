@@ -8,6 +8,9 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.function.Predicate;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.mojang.brigadier.context.CommandContext;
 
 import github.chorman0773.gac14.Gac14Core;
@@ -36,7 +39,10 @@ public class PermissionManager
 	
 	public final RootCommandSource root = new RootCommandSource(Gac14Core.getInstance().getServer());
 	
+	private static final Logger LOGGER = LogManager.getLogger();
+	
 	public PermissionManager() {
+		LOGGER.info("Setting up PermissionManager");
 		MinecraftForge.EVENT_BUS.post(new PermissionEvent.Register(this));
 	}
 	
@@ -65,7 +71,13 @@ public class PermissionManager
 	}
 	
 	public IPermission<PermissionManager, String, ?> getPermission(String name){
-		return permissionsMap.get(name);
+		if(permissionsMap.containsKey(name))
+			return permissionsMap.get(name);
+		else {
+			NamedPermission<PermissionManager> p = new NamedPermission<>(name);
+			register(p);
+			return p;
+		}
 	}
 
 	@Override
@@ -76,8 +88,13 @@ public class PermissionManager
 
 	@Override
 	public IGroup<ResourceLocation, PermissionManager, ?> getGroupByName(ResourceLocation name) {
-		// TODO Auto-generated method stub
-		return groupMap.get(name);
+		if(groupMap.containsKey(name))
+			return groupMap.get(name);
+		else {
+			NamedGroup g = new NamedGroup(name);
+			this.register(g);
+			return g;
+		}
 	}
 	
 	
