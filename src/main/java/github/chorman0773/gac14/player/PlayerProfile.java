@@ -41,22 +41,25 @@ import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
+import net.minecraftforge.event.TickEvent.ServerTickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 
 @Mod.EventBusSubscriber(modid="gac14-core",bus=Mod.EventBusSubscriber.Bus.FORGE)
 public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<CompoundNBT> {
 	@Nullable private ServerPlayerEntity player;
 	@Nonnull private final GameProfile profile;
 	@Nonnull private final UUID id;
-	private Set<IGroup<ResourceLocation,PermissionManager,?>> groups = new TreeSet<>(Comparators.with(Comparators.with(String.CASE_INSENSITIVE_ORDER, ResourceLocation::toString), IGroup::getName));
+	
+	private Set<IGroup<ResourceLocation,String,PermissionManager,?>> groups = new TreeSet<>(Comparators.with(Comparators.with(String.CASE_INSENSITIVE_ORDER, ResourceLocation::toString), IGroup::getName));
 	private Set<IPermission<PermissionManager,String,?>> permissions = new TreeSet<>();
 	private Set<IPermission<PermissionManager,String,?>> revoked = new TreeSet<>();
 	
 	private Map<ResourceLocation,Consumer<PlayerProfile>> updaters = new TreeMap<>(Comparators.stringOrder);
 	
 	private Set<IPermission<PermissionManager,String,?>> cached;
+	private Set<IGroup<ResourceLocation,String,PermissionManager,?>> cachedGroups;
 	private boolean permissionsDirty = true;
+	private boolean groupsDirty = true;
 	
 	private boolean dirty = false;
 	
@@ -250,15 +253,14 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 	 * Complexity Guarantee:<br/>
 	 * O(n^2)
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public Set<? extends IPermission<PermissionManager, String, ?>> getPermissions(PermissionManager manager) {
 		if(permissionsDirty) {
 			Set<IPermission<PermissionManager,String,?>> permissions = new TreeSet<>();
 			for(IPermission<PermissionManager,String,?> p:this.permissions)
 				permissions.addAll(p.implies(manager));
-			for(IGroup<ResourceLocation,PermissionManager,?> g:this.groups)
-				permissions.addAll((Set<? extends IPermission<PermissionManager,String,?>>)g.implied(manager));
+			for(IGroup<ResourceLocation,String,PermissionManager,?> g:this.groups)
+				permissions.addAll((Set<? extends IPermission<PermissionManager,String,?>>)g.getPermissions(manager));
 			for(IPermission<PermissionManager,String,?> p:this.revoked)
 				permissions.removeAll(p.implies(manager));
 			cached = permissions;
@@ -269,9 +271,15 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 
 
 	@Override
-	public Set<? extends IGroup<ResourceLocation, PermissionManager, ?>> getGroups(PermissionManager manager) {
-		// TODO Auto-generated method stub
-		return Collections.unmodifiableSet(groups);
+	public Set<? extends IGroup<ResourceLocation,String, PermissionManager, ?>> getGroups(PermissionManager manager) {
+		if(groupsDirty) {
+			Set<IGroup<ResourceLocation,String,PermissionManager,?>> groups = new TreeSet<>(PermissionManager.groupsByName);
+			for(IGroup<ResourceLocation,String,PermissionManager,?> g:this.groups)
+				groups.addAll(g.getGroups(manager));
+			cachedGroups = groups;
+			groupsDirty = false;
+		}
+		return Collections.unmodifiableSet(cachedGroups);
 	}
 
 
@@ -287,7 +295,7 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 			revoked.add(new StringNBT(permission.getName()));
 		nbt.put("RevokedPermissions", revoked);
 		ListNBT groups = new ListNBT();
-		for(IGroup<ResourceLocation,PermissionManager,?> group:this.groups)
+		for(IGroup<ResourceLocation,String,PermissionManager,?> group:this.groups)
 			groups.add(new StringNBT(group.getName().toString()));
 		nbt.put("Groups", groups);
 		CompoundNBT tags = new CompoundNBT();
@@ -331,15 +339,17 @@ public class PlayerProfile implements IBasicPermissible<UUID>, INBTSerializable<
 	}
 
 
-	public void joinGroup(IGroup<ResourceLocation,PermissionManager,?> group) {
+	public void joinGroup(IGroup<ResourceLocation,String,PermissionManager,?> group) {
 		this.groups.add(group);
 		permissionsDirty = true;
+		groupsDirty = true;
 		markDirty();
 	}
 	
-	public void leaveGroup(IGroup<ResourceLocation,PermissionManager,?> group) {
+	public void leaveGroup(IGroup<ResourceLocation,String,PermissionManager,?> group) {
 		this.groups.remove(group);
 		permissionsDirty = true;
+		groupsDirty = true;
 		markDirty();
 	}
 	

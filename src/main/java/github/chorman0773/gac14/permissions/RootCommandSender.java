@@ -30,7 +30,7 @@ public class RootCommandSender implements IBasicPermissible<UUID>, ICommandSourc
 	}
 
 	@Override
-	public Set<? extends IGroup<ResourceLocation, PermissionManager, ?>> getGroups(PermissionManager manager) {
+	public Set<? extends IGroup<ResourceLocation,String, PermissionManager, ?>> getGroups(PermissionManager manager) {
 		// TODO Auto-generated method stub
 		return manager.getAllGroups();
 	}

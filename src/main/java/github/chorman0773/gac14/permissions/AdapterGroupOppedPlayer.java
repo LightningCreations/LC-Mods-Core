@@ -13,14 +13,13 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid="gac14-core")
-class AdapterGroupOppedPlayer implements IGroup<ResourceLocation,PermissionManager,AdapterGroupOppedPlayer> {
+class AdapterGroupOppedPlayer extends NamedGroup {
 
-	private Set<IPermission<PermissionManager,String,?>> impliedNodes;
 	
 	public static AdapterGroupOppedPlayer op = new AdapterGroupOppedPlayer();
 	
 	private AdapterGroupOppedPlayer() {
-		impliedNodes = new TreeSet<>(Comparator.comparing(IPermission::getName));
+		super(new ResourceLocation("gac14:__adapter/op"));
 	}
 	
 	@SubscribeEvent
@@ -34,28 +33,6 @@ class AdapterGroupOppedPlayer implements IGroup<ResourceLocation,PermissionManag
 			create.player.joinGroup(op);
 		else
 			create.player.leaveGroup(op);
-	}
-	
-	public void addImpliedPermission(IPermission<PermissionManager,String,?> node) {
-		impliedNodes.add(node);
-	}
-
-	@Override
-	public Set<? extends IGroup<ResourceLocation, PermissionManager, ?>> impliedGroups(PermissionManager manager) {
-		// TODO Auto-generated method stub
-		return Collections.emptySet();
-	}
-
-	@Override
-	public Set<? extends IPermission<PermissionManager, ?, ?>> implied(PermissionManager manager) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public ResourceLocation getName() {
-		// TODO Auto-generated method stub
-		return new ResourceLocation("gac14:__adapter/opped");
 	}
 
 }

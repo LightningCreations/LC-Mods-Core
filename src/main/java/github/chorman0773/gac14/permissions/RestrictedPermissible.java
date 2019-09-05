@@ -7,9 +7,9 @@ import net.minecraft.util.ResourceLocation;
 
 public class RestrictedPermissible implements IBasicPermissible<UUID> {
 	private Set<? extends IPermission<PermissionManager,String,?>> permissions;
-	private Set<? extends IGroup<ResourceLocation, PermissionManager,?>> groups;
+	private Set<? extends IGroup<ResourceLocation,String, PermissionManager,?>> groups;
 	private IBasicPermissible<UUID> origin;
-	public RestrictedPermissible(Set<? extends IPermission<PermissionManager,String,?>> permissions,Set<? extends IGroup<ResourceLocation,PermissionManager,?>> groups,IBasicPermissible<UUID> origin) {
+	public RestrictedPermissible(Set<? extends IPermission<PermissionManager,String,?>> permissions,Set<? extends IGroup<ResourceLocation,String,PermissionManager,?>> groups,IBasicPermissible<UUID> origin) {
 		this.permissions = permissions;
 		this.groups = groups;
 		this.origin = origin;
@@ -32,7 +32,7 @@ public class RestrictedPermissible implements IBasicPermissible<UUID> {
 	}
 
 	@Override
-	public Set<? extends IGroup<ResourceLocation, PermissionManager, ?>> getGroups(PermissionManager manager) {
+	public Set<? extends IGroup<ResourceLocation,String, PermissionManager, ?>> getGroups(PermissionManager manager) {
 		// TODO Auto-generated method stub
 		return groups;
 	}

@@ -1,6 +1,8 @@
 package github.chorman0773.gac14.permissions;
 
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -27,12 +29,12 @@ public class PermissionManager
 		implements IPermissionManager<String, ResourceLocation, ResourceLocation, PermissionManager> {
 	
 	private static final Comparator<ResourceLocation> stringOrder = Comparators.with(String.CASE_INSENSITIVE_ORDER, ResourceLocation::toString);
-	private static final Comparator<IGroup<ResourceLocation,PermissionManager,?>> byName = Comparators.with(stringOrder, IGroup::getName);
+	public static final Comparator<IGroup<ResourceLocation,String,PermissionManager,?>> groupsByName = Comparators.with(stringOrder, IGroup::getName);
 	
 	private Set<IPermission<PermissionManager,String,?>> permissions = new TreeSet<>();
 	private Map<String,IPermission<PermissionManager,String,?>> permissionsMap = new TreeMap<>();
-	private Set<IGroup<ResourceLocation,PermissionManager,?>> groups = new TreeSet<>(byName);
-	private Map<ResourceLocation,IGroup<ResourceLocation,PermissionManager,?>> groupMap = new TreeMap<>(stringOrder);
+	private Set<IGroup<ResourceLocation,String,PermissionManager,?>> groups = new TreeSet<>(groupsByName);
+	private Map<ResourceLocation,IGroup<ResourceLocation,String,PermissionManager,?>> groupMap = new TreeMap<>(stringOrder);
 	
 	public static final RootPermission<PermissionManager> rootPermission = new RootPermission<>();
 	public static final RootGroup rootGroup = new RootGroup();
@@ -52,7 +54,7 @@ public class PermissionManager
 		permissionsMap.put(permission.getName(), permission);
 	}
 	
-	public void register(IGroup<ResourceLocation,PermissionManager,?> group) {
+	public void register(IGroup<ResourceLocation,String,PermissionManager,?> group) {
 		if(!groups.add(group))
 			throw new IllegalArgumentException("Group Already Exists");
 		groupMap.put(group.getName(), group);
@@ -81,13 +83,13 @@ public class PermissionManager
 	}
 
 	@Override
-	public Set<? extends IGroup<ResourceLocation, PermissionManager, ?>> getAllGroups() {
+	public Set<? extends IGroup<ResourceLocation,String, PermissionManager, ?>> getAllGroups() {
 		// TODO Auto-generated method stub
-		return groups;
+		return Collections.unmodifiableSet(groups);
 	}
 
 	@Override
-	public IGroup<ResourceLocation, PermissionManager, ?> getGroupByName(ResourceLocation name) {
+	public IGroup<ResourceLocation,String, PermissionManager, ?> getGroupByName(ResourceLocation name) {
 		if(groupMap.containsKey(name))
 			return groupMap.get(name);
 		else {
@@ -120,7 +122,7 @@ public class PermissionManager
 		return getPermissible(ctx.getSource()).getPermissions(this);
 	}
 	
-	public Set<? extends IGroup<ResourceLocation,PermissionManager,?>> getGroupsForContext(CommandContext<CommandSource> ctx){
+	public Set<? extends IGroup<ResourceLocation,String,PermissionManager,?>> getGroupsForContext(CommandContext<CommandSource> ctx){
 		return getPermissible(ctx.getSource()).getGroups(this);
 	}
 
@@ -168,9 +170,14 @@ public class PermissionManager
 	}
 
 	private boolean isMemberOfGroup(IBasicPermissible<UUID> permissible,
-			IGroup<ResourceLocation, PermissionManager, ?> group) {
+			IGroup<ResourceLocation,String, PermissionManager, ?> group) {
 		// TODO Auto-generated method stub
 		return hasElevation(permissible)||permissible.getGroups(this).contains(group);
+	}
+
+	public Set<? extends IGroup<ResourceLocation, String, PermissionManager, ?>> getAllGroups(Predicate<? super IGroup<ResourceLocation, String, PermissionManager, ?>> check) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 

@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
@@ -22,11 +23,18 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.Constants.NBT;
 
-public class NamedGroup implements IGroup<ResourceLocation, PermissionManager, NamedGroup> {
+public class NamedGroup implements IGroup<ResourceLocation,String, PermissionManager, NamedGroup> {
 	
-	private Set<IGroup<ResourceLocation, PermissionManager,?>> impliedGroups;
+	private Set<IGroup<ResourceLocation,String, PermissionManager,?>> impliedGroups;
 	private Set<IPermission<PermissionManager,String,?>> impliedNodes;
 	private ResourceLocation name;
+	
+	private Set<IGroup<ResourceLocation,String,PermissionManager,?>> cachedGroups;
+	private Set<IPermission<PermissionManager,String,?>> cachedPermissions;
+	
+	private boolean groupsDirty = true;
+	private boolean permissionsDirty = true;
+	private boolean dirty = false;
 	
 	public NamedGroup(ResourceLocation loc) {
 		this.name = loc;
@@ -36,20 +44,26 @@ public class NamedGroup implements IGroup<ResourceLocation, PermissionManager, N
 		impliedNodes = new TreeSet<>(Comparator.comparing(IPermission::getName));
 	}
 	
-	public void addImpliedGroup(IGroup<ResourceLocation,PermissionManager,?> group) {
+	public void joinGroup(IGroup<ResourceLocation,String,PermissionManager,?> group) {
 		impliedGroups.add(group);
+		groupsDirty = true;
+		dirty = true;
 	}
 	
-	public void removeImpliedGroup(IGroup<ResourceLocation,PermissionManager,?> group) {
+	public void leaveGroup(IGroup<ResourceLocation,String,PermissionManager,?> group) {
 		impliedGroups.remove(group);
+		groupsDirty = true;
+		dirty = true;
 	}
 	
-	public void addImpliedPermission(IPermission<PermissionManager,String,?> node) {
+	public void addPermission(IPermission<PermissionManager,String,?> node) {
 		impliedNodes.add(node);
+		dirty = true;
 	}
 	
-	public void removeImpliedPermission(IPermission<PermissionManager,String,?> node) {
+	public void removePermission(IPermission<PermissionManager,String,?> node) {
 		impliedNodes.remove(node);
+		dirty = true;
 	}
 	
 	private static final Gac14Core core = Gac14Core.getInstance();
@@ -78,12 +92,15 @@ public class NamedGroup implements IGroup<ResourceLocation, PermissionManager, N
 				.map(ResourceLocation::new)
 				.map(manager::getGroupByName)
 				.forEachOrdered(impliedGroups::add);
+			groupsDirty = true;
+			
 		}catch(IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
 	
 	private void save(DataEvent.Save save) {
+		if(dirty)
 		try {
 			String subpath = "groups/"+name.getNamespace()+"/"+name.getPath();
 			Path p = core.getStoragePath(new ResourceLocation("gac14",subpath));
@@ -109,15 +126,35 @@ public class NamedGroup implements IGroup<ResourceLocation, PermissionManager, N
 	}
 
 	@Override
-	public Set<? extends IGroup<ResourceLocation, PermissionManager, ?>> impliedGroups(PermissionManager manager) {
-		// TODO Auto-generated method stub
-		return impliedGroups;
+	public Set<? extends IGroup<ResourceLocation,String, PermissionManager, ?>> getGroups(PermissionManager manager) {
+		if(groupsDirty) {
+			Set<IGroup<ResourceLocation,String,PermissionManager,?>> groups = new TreeSet<>(PermissionManager.groupsByName);
+			for(IGroup<ResourceLocation,String,PermissionManager,?> g:this.impliedGroups)
+				groups.addAll(g.getGroups(manager));
+			cachedGroups = groups;
+		}
+		return Collections.unmodifiableSet(cachedGroups);
 	}
 
+	/**
+	 * Gets the set of all permissions.
+	 * The result of this method is invalidated on any call to addPermission, removePermission, and revokePermission.
+	 * <br/>
+	 * Complexity Guarantee:<br/>
+	 * O(n^2)
+	 */
 	@Override
-	public Set<? extends IPermission<PermissionManager, ?, ?>> implied(PermissionManager manager) {
-		// TODO Auto-generated method stub
-		return impliedNodes;
+	public Set<? extends IPermission<PermissionManager, String, ?>> getPermissions(PermissionManager manager) {
+		if(permissionsDirty) {
+			Set<IPermission<PermissionManager,String,?>> permissions = new TreeSet<>();
+			for(IPermission<PermissionManager,String,?> p:this.impliedNodes)
+				permissions.addAll(p.implies(manager));
+			for(IGroup<ResourceLocation,String,PermissionManager,?> g:this.impliedGroups)
+				permissions.addAll((Set<? extends IPermission<PermissionManager,String,?>>)g.getPermissions(manager));
+			cachedPermissions = permissions;
+			permissionsDirty = false;
+		}
+		return Collections.unmodifiableSet(this.cachedPermissions);
 	}
 
 	@Override
